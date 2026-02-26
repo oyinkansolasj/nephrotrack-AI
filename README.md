@@ -1,4 +1,4 @@
-# NephroTrack — AI-Powered CKD Clinical Management System
+# NephroTrack — AI- Kidney Disease Prediction 
 
 A full-stack clinical decision support system for managing Chronic Kidney Disease (CKD) patients, built as a research/academic project.
 
