@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Settings, UserPlus, Search, Shield, CheckCircle, XCircle, Edit2 } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { users } from '../data/mockData';
+
+// TODO: Replace with → GET /api/admin/users
+const users = [];
 
 const roleBadge = {
   clinician:       'badge-info',

@@ -1,30 +1,39 @@
 import { createContext, useContext, useState } from 'react';
-import { users, demoAccounts } from '../data/mockData';
 
 const AuthContext = createContext(null);
 
 const STORAGE_KEY = 'nephrotrack_user_id';
 
+// ─── Demo accounts (UI only — will be replaced by real API auth) ──────────────
+const DEMO_USERS = {
+  U001: { id: 'U001', name: 'Dr. Amara Nwosu',  email: 'amara@nephrotrack.ng',  password: 'demo123', role: 'clinician' },
+  U002: { id: 'U002', name: 'Tunde Adeyemi',    email: 'tunde@nephrotrack.ng',  password: 'demo123', role: 'admin' },
+  U003: { id: 'U003', name: 'Ngozi Okafor',     email: 'ngozi@nephrotrack.ng',  password: 'demo123', role: 'records_officer' },
+  U004: { id: 'U004', name: 'Emeka Chukwu',     email: 'emeka@nephrotrack.ng',  password: 'demo123', role: 'billing' },
+};
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
     const savedId = localStorage.getItem(STORAGE_KEY);
-    return savedId ? (users.find((u) => u.id === savedId) ?? null) : null;
+    return savedId ? (DEMO_USERS[savedId] ?? null) : null;
   });
 
   const login = (email, password) => {
-    const account = Object.values(demoAccounts).find(
-      (a) => a.email === email && a.password === password
+    // TODO: Replace with real API call → POST /api/auth/login
+    const user = Object.values(DEMO_USERS).find(
+      (u) => u.email === email && u.password === password
     );
-    if (!account) return { success: false, message: 'Invalid email or password.' };
-    const user = users.find((u) => u.id === account.userId);
-    setCurrentUser(user);
-    localStorage.setItem(STORAGE_KEY, user.id);
+    if (!user) return { success: false, message: 'Invalid email or password.' };
+    const { password: _, ...safeUser } = user; // strip password from state
+    setCurrentUser(safeUser);
+    localStorage.setItem(STORAGE_KEY, safeUser.id);
     return { success: true };
   };
 
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    // TODO: Call POST /api/auth/logout to invalidate server session
   };
 
   return (
@@ -35,3 +44,11 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+// ─── Demo email hints (for the Login page quick-access buttons) ───────────────
+export const DEMO_ACCOUNTS = [
+  { role: 'clinician',       email: 'amara@nephrotrack.ng' },
+  { role: 'admin',           email: 'tunde@nephrotrack.ng' },
+  { role: 'records_officer', email: 'ngozi@nephrotrack.ng' },
+  { role: 'billing',         email: 'emeka@nephrotrack.ng' },
+];

@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { Brain, AlertTriangle, CheckCircle, Info, Loader, RotateCcw, FileDown } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { predictionFeatures, patients } from '../data/mockData';
+import { predictionFeatures } from '../config/predictionConfig';
+
+// TODO: Replace with → GET /api/patients (for auto-fill dropdown)
+//                       POST /api/predictions (to run & save prediction)
+const patients = [];
 
 export default function CKDPrediction() {
   const [formValues, setFormValues] = useState({});

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { BarChart3, Download, Filter, AlertTriangle } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { patients, predictions } from '../data/mockData';
+
+// TODO: Replace with → GET /api/reports/risk-summary
+//                       GET /api/predictions?recent=true
+//                       GET /api/reports/demographics
+const patients    = [];
+const predictions = [];
 
 const riskBadge = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
 

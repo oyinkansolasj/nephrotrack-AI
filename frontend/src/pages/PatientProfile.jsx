@@ -4,8 +4,14 @@ import {
   Activity, FlaskConical, Clock, Brain, Stethoscope,
 } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { patients, visits, predictions } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
+
+// TODO: Replace with → GET /api/patients/:id
+//                       GET /api/patients/:id/visits
+//                       GET /api/patients/:id/predictions
+const patients    = [];
+const visits      = [];
+const predictions = [];
 
 const riskColor = {
   high:   { badge: 'badge-high',   bar: 'bg-red-500',   ring: 'ring-red-400 bg-red-50 text-red-700' },

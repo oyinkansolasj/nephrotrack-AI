@@ -5,7 +5,14 @@ import {
 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
-import { dashboardStats, patients, appointments } from '../data/mockData';
+
+// TODO: Replace with real API calls
+// GET /api/dashboard/stats
+// GET /api/patients?risk=high
+// GET /api/appointments?date=today
+const stats        = { totalPatients: 0, highRiskCount: 0, todayAppointments: 0, predictionsThisMonth: 0, pendingLabReviews: 0 };
+const highRisk     = [];
+const todayAppts   = [];
 
 const StatCard = ({ label, value, icon: Icon, color, sub }) => (
   <div className="card p-5 flex items-start justify-between">
@@ -26,8 +33,6 @@ const apptStatus = { confirmed: 'badge-low', pending: 'badge-medium' };
 export default function Dashboard() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const highRisk = patients.filter(p => p.ckdRisk === 'high');
-  const todayAppts = appointments.slice(0, 4);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -39,32 +44,32 @@ export default function Dashboard() {
   // Role-specific stat cards
   const statsByRole = {
     clinician: [
-      { label: 'Total Patients',       value: dashboardStats.totalPatients,         icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: '+4 this week' },
-      { label: 'High Risk Patients',   value: dashboardStats.highRiskCount,          icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Needs attention' },
-      { label: "Today's Appointments", value: dashboardStats.todayAppointments,      icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: '3 remaining' },
-      { label: 'Predictions This Month', value: dashboardStats.predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: 'Avg risk: 58%' },
+      { label: 'Total Patients',       value: stats.totalPatients,         icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: '+4 this week' },
+      { label: 'High Risk Patients',   value: stats.highRiskCount,          icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Needs attention' },
+      { label: "Today's Appointments", value: stats.todayAppointments,      icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: '3 remaining' },
+      { label: 'Predictions This Month', value: stats.predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: 'Avg risk: 58%' },
     ],
     admin: [
-      { label: 'Total Patients',       value: dashboardStats.totalPatients,          icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Registered' },
-      { label: 'High Risk Patients',   value: dashboardStats.highRiskCount,          icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Active alerts' },
-      { label: 'Predictions This Month', value: dashboardStats.predictionsThisMonth, icon: TrendingUp,    color: 'bg-purple-100 text-purple-700', sub: 'AI assessments' },
-      { label: 'Pending Lab Reviews',  value: dashboardStats.pendingLabReviews,      icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'Awaiting review' },
+      { label: 'Total Patients',       value: stats.totalPatients,          icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Registered' },
+      { label: 'High Risk Patients',   value: stats.highRiskCount,          icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Active alerts' },
+      { label: 'Predictions This Month', value: stats.predictionsThisMonth, icon: TrendingUp,    color: 'bg-purple-100 text-purple-700', sub: 'AI assessments' },
+      { label: 'Pending Lab Reviews',  value: stats.pendingLabReviews,      icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'Awaiting review' },
     ],
     records_officer: [
-      { label: 'Total Patients',       value: dashboardStats.totalPatients,          icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'On record' },
-      { label: "Today's Appointments", value: dashboardStats.todayAppointments,      icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'Scheduled' },
-      { label: 'Pending Lab Reviews',  value: dashboardStats.pendingLabReviews,      icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'Awaiting update' },
-      { label: 'High Risk Patients',   value: dashboardStats.highRiskCount,          icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Flagged' },
+      { label: 'Total Patients',       value: stats.totalPatients,          icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'On record' },
+      { label: "Today's Appointments", value: stats.todayAppointments,      icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'Scheduled' },
+      { label: 'Pending Lab Reviews',  value: stats.pendingLabReviews,      icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'Awaiting update' },
+      { label: 'High Risk Patients',   value: stats.highRiskCount,          icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Flagged' },
     ],
     billing: [
-      { label: 'Total Patients',       value: dashboardStats.totalPatients,          icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Active' },
-      { label: "Today's Appointments", value: dashboardStats.todayAppointments,      icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'Billable visits' },
-      { label: 'Predictions This Month', value: dashboardStats.predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: 'AI services' },
-      { label: 'Pending Lab Reviews',  value: dashboardStats.pendingLabReviews,      icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'Unbilled items' },
+      { label: 'Total Patients',       value: stats.totalPatients,          icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Active' },
+      { label: "Today's Appointments", value: stats.todayAppointments,      icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'Billable visits' },
+      { label: 'Predictions This Month', value: stats.predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: 'AI services' },
+      { label: 'Pending Lab Reviews',  value: stats.pendingLabReviews,      icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'Unbilled items' },
     ],
   };
 
-  const stats = statsByRole[currentUser?.role] || statsByRole.clinician;
+  const roleStats = statsByRole[currentUser?.role] || statsByRole.clinician;
 
   return (
     <div className="min-h-screen">
@@ -76,7 +81,7 @@ export default function Dashboard() {
       <div className="p-8 space-y-8">
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map(s => <StatCard key={s.label} {...s} />)}
+          {roleStats.map(s => <StatCard key={s.label} {...s} />)}
         </div>
 
         <div className="grid grid-cols-3 gap-6">

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Activity, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { demoAccounts } from '../data/mockData';
+import { useAuth, DEMO_ACCOUNTS } from '../context/AuthContext';
 
 export default function Login() {
   const { currentUser, login } = useAuth();
@@ -26,10 +25,20 @@ export default function Login() {
     else setError(result.message);
   };
 
-  const fillDemo = (role) => {
-    const acc = demoAccounts[role];
-    setEmail(acc.email);
-    setPassword(acc.password);
+  const roleStyles = {
+    clinician:       'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200',
+    admin:           'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200',
+    records_officer: 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200',
+    billing:         'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200',
+  };
+  const roleLabels = {
+    clinician: 'Clinician', admin: 'Admin',
+    records_officer: 'Records Officer', billing: 'Billing',
+  };
+
+  const fillDemo = (demoEmail) => {
+    setEmail(demoEmail);
+    setPassword('demo123');
     setError('');
   };
 
@@ -60,26 +69,15 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="input-field"
-                placeholder="you@nephrotrack.ng"
-                required
-              />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                className="input-field" placeholder="you@nephrotrack.ng" required />
             </div>
             <div>
               <label className="label">Password</label>
               <div className="relative">
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={password}
+                <input type={showPw ? 'text' : 'password'} value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="input-field pr-10"
-                  placeholder="Enter your password"
-                  required
-                />
+                  className="input-field pr-10" placeholder="Enter your password" required />
                 <button type="button" onClick={() => setShowPw(!showPw)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -91,22 +89,14 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo accounts */}
+          {/* Demo quick-access */}
           <div className="mt-6 pt-5 border-t border-slate-100">
             <p className="text-xs text-slate-500 text-center mb-3 font-medium">Quick demo access</p>
             <div className="grid grid-cols-2 gap-2">
-              {[
-                { role: 'clinician',       label: 'Clinician',        color: 'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200' },
-                { role: 'admin',           label: 'Admin',            color: 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200' },
-                { role: 'records_officer', label: 'Records Officer',  color: 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200' },
-                { role: 'billing',         label: 'Billing',          color: 'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200' },
-              ].map(({ role, label, color }) => (
-                <button
-                  key={role}
-                  onClick={() => fillDemo(role)}
-                  className={`text-xs font-medium px-3 py-2 rounded-lg border transition-colors ${color}`}
-                >
-                  {label}
+              {DEMO_ACCOUNTS.map(({ role, email: demoEmail }) => (
+                <button key={role} onClick={() => fillDemo(demoEmail)}
+                  className={`text-xs font-medium px-3 py-2 rounded-lg border transition-colors ${roleStyles[role]}`}>
+                  {roleLabels[role]}
                 </button>
               ))}
             </div>

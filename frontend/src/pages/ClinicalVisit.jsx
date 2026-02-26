@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stethoscope, CheckCircle, ArrowLeft, Brain } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { patients } from '../data/mockData';
+
+// TODO: Replace with → GET /api/patients (for patient selector dropdown)
+const patients = [];
 
 const initVitals = { bp_systolic: '', bp_diastolic: '', pulse: '', temperature: '', weight: '', height: '' };
 const initLabs   = { creatinine: '', bun: '', glucose: '', potassium: '', hemoglobin: '', albumin: '', hba1c: '', gfr: '' };

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { CreditCard, Search, Filter, TrendingUp, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { invoices } from '../data/mockData';
+
+// TODO: Replace with → GET /api/billing/invoices
+const invoices = [];
 
 const statusBadge = {
   paid:    'badge-low',

@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, UserPlus, Filter, ChevronRight } from 'lucide-react';
 import Header from '../components/layout/Header';
-import { patients } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
+
+// TODO: Replace with → GET /api/patients
+const patients = [];
 
 const riskBadge = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
 
