@@ -51,7 +51,7 @@ export default function Login() {
             <Activity className="w-9 h-9 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">NephroTrack</h1>
-          <p className="text-brand-300 mt-1 text-sm">Clinical CKD Management System</p>
+          <p className="text-brand-300 mt-1 text-sm">Kidney Disease Prediction Management System</p>
         </div>
 
         {/* Card */}
@@ -89,7 +89,7 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo quick-access */}
+          {/* Demo quick-access   /* This section is for demonstration purposes only and would be removed before deployment. */}
           <div className="mt-6 pt-5 border-t border-slate-100">
             <p className="text-xs text-slate-500 text-center mb-3 font-medium">Quick demo access</p>
             <div className="grid grid-cols-2 gap-2">

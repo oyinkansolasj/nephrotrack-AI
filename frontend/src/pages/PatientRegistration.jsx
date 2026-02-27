@@ -34,7 +34,7 @@ export default function PatientRegistration() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-9 h-9 text-green-600" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Patient Registered!</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Patient has been Registered!</h3>
             <p className="text-slate-500 text-sm mb-6">
               <strong>{form.firstName} {form.lastName}</strong> has been successfully registered in the system.
             </p>
@@ -98,8 +98,8 @@ export default function PatientRegistration() {
           <div className="card p-6">
             <h3 className="text-base font-semibold text-slate-800 mb-4">Next of Kin</h3>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Name" name="nextOfKinName" placeholder="Full name" />
-              <Field label="Phone" name="nextOfKinPhone" placeholder="080-XXXX-XXXX" />
+              <Field label="Name" name="nextOfKinName" placeholder="Full name" required />
+              <Field label="Phone Number" name="nextOfKinPhone" placeholder="080-XXXX-XXXX" required />
             </div>
           </div>
 
@@ -107,10 +107,10 @@ export default function PatientRegistration() {
           <div className="card p-6">
             <h3 className="text-base font-semibold text-slate-800 mb-4">Medical History</h3>
             <div className="grid grid-cols-2 gap-4">
-              <Select label="Hypertension" name="hypertension" options={['Yes','No','Unknown']} />
-              <Select label="Diabetes Mellitus" name="diabetes" options={['Yes','No','Unknown']} />
+              <Select label="Hypertension" name="hypertension" options={['Yes','No','Unknown']} required />
+              <Select label="Diabetes Mellitus" name="diabetes" options={['Yes','No','Unknown']} required />
               <div>
-                <label className="label">Known Allergies</label>
+                <label className="label">Allergies</label>
                 <textarea value={form.allergies} onChange={e => set('allergies', e.target.value)}
                   className="input-field h-20 resize-none" placeholder="List any known allergies..." />
               </div>

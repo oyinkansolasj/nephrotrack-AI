@@ -75,7 +75,7 @@ export default function Dashboard() {
     <div className="min-h-screen">
       <Header
         title={`${greeting()}, ${currentUser?.name?.split(' ')[0] ?? 'User'} 👋`}
-        subtitle={`Here's what's happening today — ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`}
+        subtitle={`Here's what's happening today, ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`}
       />
 
       <div className="p-8 space-y-8">
@@ -151,7 +151,7 @@ export default function Dashboard() {
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 flex items-center gap-3">
           <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
           <p className="text-xs text-amber-800">
-            <strong>Clinical Disclaimer:</strong> NephroTrack predictions are decision support tools only and must not replace professional medical diagnosis or clinical judgment.
+            <strong>Disclaimer:</strong> NephroTrack predictions is a decision support tool only and must not replace professional medical diagnosis or clinical judgment.
           </p>
         </div>
       </div>

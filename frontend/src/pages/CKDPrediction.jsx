@@ -115,7 +115,7 @@ export default function CKDPrediction() {
 
   return (
     <div className="min-h-screen">
-      <Header title="CKD Risk Prediction" subtitle="AI-powered chronic kidney disease risk assessment" />
+      <Header title="CKD Risk Prediction" subtitle="AI prediction kidney disease risk assessment" />
       <div className="p-8">
         {/* Disclaimer */}
         <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-6 flex items-start gap-3">
@@ -123,7 +123,7 @@ export default function CKDPrediction() {
           <div>
             <p className="text-sm font-semibold text-brand-900">About This Prediction Model</p>
             <p className="text-sm text-brand-700 mt-1">
-              This module uses a supervised machine learning model trained on clinical CKD datasets.
+              This module uses a supervised machine learning model trained on clinical kidney disease datasets.
               Results are for <strong>clinical decision support only</strong> and must be interpreted alongside professional medical judgment.
             </p>
           </div>

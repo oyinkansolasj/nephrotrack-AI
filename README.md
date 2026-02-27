@@ -1,12 +1,12 @@
 # NephroTrack — AI-Powered CKD Clinical Management System
 
-A full-stack clinical decision support system for managing Chronic Kidney Disease (CKD) patients, built as a research/academic project.
+A full-stack clinical decision support system for managing Kidney Disease in patients, built as a research/academic project.
 
 ## Overview
 
-NephroTrack helps clinicians screen, monitor, and assess CKD risk for patients using an AI prediction model trained on clinical datasets.
+NephroTrack helps clinicians screen, monitor, and assess Kidney Disease risk for patients using an AI prediction model trained on clinical datasets.
 
-> ⚠️ **Disclaimer:** This system is for clinical decision support only and must not replace professional medical diagnosis.
+**Disclaimer:** This system is for clinical decision support only and must not replace professional medical diagnosis.
 
 ---
 
@@ -14,16 +14,16 @@ NephroTrack helps clinicians screen, monitor, and assess CKD risk for patients u
 
 ```
 nephrotrack-AI/
-├── frontend/       ← React + Vite + Tailwind CSS (Stage 8)
-├── backend/        ← Node.js + Express API (coming soon)
-├── ml-service/     ← Python + FastAPI prediction service (coming soon)
-├── docs/           ← Architecture, API specs, runbooks (coming soon)
-└── infra/          ← Docker, deployment configs (coming soon)
+├── frontend/       ← React + Vite + Tailwind CSS 
+├── backend/        ← Node.js + Express API 
+├── ml-service/     ← Python + FastAPI prediction service 
+├── docs/           ← Architecture, API specs, runbooks 
+└── infra/          ← Docker, deployment configs
 ```
 
 ---
 
-## Frontend (Current Stage)
+## Frontend
 
 ### Tech Stack
 - **React 18** with Vite
@@ -36,7 +36,7 @@ nephrotrack-AI/
 |------|-------------|
 | Login | Role-based authentication with demo accounts |
 | Dashboard | Role-specific stats, high-risk patients, today's schedule |
-| Patient Registry | Search, filter, and view all patients |
+| Patient Registry (List) | Search, filter, and view all patients(with their details) |
 | Patient Registration | Multi-section form to register new patients |
 | Patient Profile | Demographics, vitals, lab results, visit timeline, prediction history |
 | Clinical Visit | 4-step form: patient info → vitals → labs → summary |
