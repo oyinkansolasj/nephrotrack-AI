@@ -22,7 +22,7 @@ const navByRole = {
   ],
   records_officer: [
     { to: '/dashboard',          icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/patients',           icon: Users,            label: 'Patient List' },
+    { to: '/patients',           icon: Users,            label: 'Patient Registry' },
     { to: '/patients/register',  icon: UserPlus,         label: 'Register Patient' },
   ],
   billing: [

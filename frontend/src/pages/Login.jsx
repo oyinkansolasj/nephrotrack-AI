@@ -89,7 +89,7 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo quick-access   /* This section is for demonstration purposes only and would be removed before deployment. */}
+          {/* Demo quick-access */}
           <div className="mt-6 pt-5 border-t border-slate-100">
             <p className="text-xs text-slate-500 text-center mb-3 font-medium">Quick demo access</p>
             <div className="grid grid-cols-2 gap-2">

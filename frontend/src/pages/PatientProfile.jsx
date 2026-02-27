@@ -64,7 +64,7 @@ export default function PatientProfile() {
       <Header title="Patient Profile" subtitle={`${patient.firstName} ${patient.lastName} · ${patient.id}`} />
       <div className="p-8 space-y-6">
         <button onClick={() => navigate('/patients')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
-          <ArrowLeft className="w-4 h-4" /> Back to Patient List
+          <ArrowLeft className="w-4 h-4" /> Back to Patient Registry
         </button>
 
         <div className="grid grid-cols-3 gap-6">
