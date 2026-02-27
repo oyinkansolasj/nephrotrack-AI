@@ -77,7 +77,8 @@ export default function PatientList() {
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ID</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Gender / DOB</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Gender</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date of Birth</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Contact</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">CKD Stage</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Risk</th>
@@ -87,7 +88,7 @@ export default function PatientList() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-12 text-slate-400">No patients found</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-slate-400">No patients found</td></tr>
               ) : filtered.map(p => (
                 <tr key={p.id}
                   onClick={() => navigate(`/patients/${p.id}`)}
@@ -101,7 +102,8 @@ export default function PatientList() {
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{p.id}</td>
-                  <td className="px-5 py-3.5 text-slate-600">{p.gender} · {p.dob}</td>
+                  <td className="px-5 py-3.5 text-slate-600">{p.gender}</td>
+                  <td className="px-5 py-3.5 text-slate-600">{p.dob}</td>
                   <td className="px-5 py-3.5 text-slate-600">{p.phone}</td>
                   <td className="px-5 py-3.5 text-slate-700 font-medium">{p.ckdStage}</td>
                   <td className="px-5 py-3.5"><span className={riskBadge[p.ckdRisk]}>{p.ckdRisk.charAt(0).toUpperCase() + p.ckdRisk.slice(1)}</span></td>

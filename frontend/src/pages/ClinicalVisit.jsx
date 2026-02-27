@@ -58,7 +58,7 @@ export default function ClinicalVisit() {
                 <Brain className="w-4 h-4" /> Run Prediction
               </button>
             )}
-            <button onClick={() => navigate('/patients')} className="btn-secondary">Patient List</button>
+            <button onClick={() => navigate('/patients')} className="btn-secondary">Patient Registry</button>
           </div>
         </div>
       </div>

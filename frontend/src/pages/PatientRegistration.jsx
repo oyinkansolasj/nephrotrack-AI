@@ -3,9 +3,43 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, CheckCircle, ArrowLeft } from 'lucide-react';
 import Header from '../components/layout/Header';
 
+const COUNTRY_CODES = [
+  { code: '+234', label: '+234 (Nigeria)' },
+  { code: '+1',   label: '+1 (USA/Canada)' },
+  { code: '+44',  label: '+44 (UK)' },
+  { code: '+233', label: '+233 (Ghana)' },
+  { code: '+254', label: '+254 (Kenya)' },
+  { code: '+27',  label: '+27 (South Africa)' },
+  { code: '+251', label: '+251 (Ethiopia)' },
+  { code: '+255', label: '+255 (Tanzania)' },
+  { code: '+256', label: '+256 (Uganda)' },
+  { code: '+237', label: '+237 (Cameroon)' },
+  { code: '+221', label: '+221 (Senegal)' },
+  { code: '+20',  label: '+20 (Egypt)' },
+  { code: '+212', label: '+212 (Morocco)' },
+  { code: '+91',  label: '+91 (India)' },
+  { code: '+86',  label: '+86 (China)' },
+  { code: '+81',  label: '+81 (Japan)' },
+  { code: '+49',  label: '+49 (Germany)' },
+  { code: '+33',  label: '+33 (France)' },
+  { code: '+39',  label: '+39 (Italy)' },
+  { code: '+34',  label: '+34 (Spain)' },
+  { code: '+55',  label: '+55 (Brazil)' },
+  { code: '+61',  label: '+61 (Australia)' },
+  { code: '+971', label: '+971 (UAE)' },
+  { code: '+966', label: '+966 (Saudi Arabia)' },
+];
+
+const NOK_RELATIONSHIPS = [
+  'Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent',
+  'Aunt/Uncle', 'Cousin', 'Friend', 'Guardian', 'Other',
+];
+
 const initForm = {
-  firstName: '', lastName: '', dob: '', gender: '', phone: '', email: '',
-  address: '', bloodGroup: '', nextOfKinName: '', nextOfKinPhone: '',
+  firstName: '', lastName: '', dob: '', gender: '', phoneCode: '+234', phone: '',
+  email: '', address: '', bloodGroup: '',
+  nextOfKinName: '', nextOfKinPhoneCode: '+234', nextOfKinPhone: '',
+  nextOfKinAddress: '', nextOfKinEmail: '', nextOfKinRelationship: '',
   hypertension: '', diabetes: '', allergies: '', currentMedications: '',
 };
 
@@ -40,7 +74,7 @@ export default function PatientRegistration() {
             </p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => setSubmitted(false)} className="btn-secondary">Register Another</button>
-              <button onClick={() => navigate('/patients')} className="btn-primary">View Patient List</button>
+              <button onClick={() => navigate('/patients')} className="btn-primary">View Patient Registry</button>
             </div>
           </div>
         </div>
@@ -68,15 +102,38 @@ export default function PatientRegistration() {
     </div>
   );
 
+  const PhoneField = ({ label, codeName, phoneName, required, className = '' }) => (
+    <div className={className}>
+      <label className="label">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+      <div className="flex">
+        <select
+          value={form[codeName]}
+          onChange={e => set(codeName, e.target.value)}
+          className="input-field w-44 rounded-r-none border-r-0 flex-shrink-0"
+        >
+          {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+        </select>
+        <input
+          type="tel"
+          value={form[phoneName]}
+          onChange={e => set(phoneName, e.target.value)}
+          className="input-field rounded-l-none flex-1"
+          placeholder="XXXX-XXXX-XXXX"
+          required={required}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen">
       <Header title="Register New Patient" subtitle="Complete all required fields to add a patient to the system" />
       <div className="p-8">
         <button onClick={() => navigate('/patients')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-6">
-          <ArrowLeft className="w-4 h-4" /> Back to Patient List
+          <ArrowLeft className="w-4 h-4" /> Back to Patient Registry
         </button>
 
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Demographics */}
           <div className="card p-6">
             <h3 className="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -87,7 +144,7 @@ export default function PatientRegistration() {
               <Field label="Last Name"  name="lastName"  placeholder="e.g. Eze"    required />
               <Field label="Date of Birth" name="dob" type="date" required />
               <Select label="Gender" name="gender" options={['Male', 'Female', 'Other']} required />
-              <Field label="Phone Number" name="phone" placeholder="080-XXXX-XXXX" required />
+              <PhoneField label="Phone Number" codeName="phoneCode" phoneName="phone" required />
               <Field label="Email Address" name="email" type="email" placeholder="patient@mail.com" />
               <Field label="Home Address" name="address" placeholder="Street, City" className="col-span-2" />
               <Select label="Blood Group" name="bloodGroup" options={['A+','A-','B+','B-','O+','O-','AB+','AB-']} required />
@@ -99,7 +156,16 @@ export default function PatientRegistration() {
             <h3 className="text-base font-semibold text-slate-800 mb-4">Next of Kin</h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Name" name="nextOfKinName" placeholder="Full name" required />
-              <Field label="Phone Number" name="nextOfKinPhone" placeholder="080-XXXX-XXXX" required />
+              <PhoneField label="Phone Number" codeName="nextOfKinPhoneCode" phoneName="nextOfKinPhone" required />
+              <Field label="Address" name="nextOfKinAddress" placeholder="Street, City" />
+              <Field label="Email Address" name="nextOfKinEmail" type="email" placeholder="email@mail.com" />
+              <div>
+                <label className="label">Relationship to Patient</label>
+                <select value={form.nextOfKinRelationship} onChange={e => set('nextOfKinRelationship', e.target.value)} className="input-field">
+                  <option value="">Select relationship</option>
+                  {NOK_RELATIONSHIPS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
