@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UserPlus, ClipboardList,
-  Brain, BarChart3, CreditCard, Settings, LogOut,
+  Brain, BarChart3, Settings, LogOut,
   Activity, Stethoscope,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -24,11 +24,6 @@ const navByRole = {
     { to: '/dashboard',          icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/patients',           icon: Users,            label: 'Patient Registry' },
     { to: '/patients/register',  icon: UserPlus,         label: 'Register Patient' },
-  ],
-  billing: [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/billing',   icon: CreditCard,       label: 'Billing' },
-    { to: '/reports',   icon: BarChart3,         label: 'Reports' },
   ],
 };
 

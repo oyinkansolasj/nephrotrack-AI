@@ -1,6 +1,6 @@
 // =============================================================================
 // NephroTrack — Database Seed Script
-// Inserts the 4 demo staff accounts with bcrypt-hashed passwords.
+// Inserts the 3 demo staff accounts with bcrypt-hashed passwords.
 // Run once after schema.sql:  node database/seed.js
 // =============================================================================
 
@@ -20,7 +20,6 @@ const DEMO_USERS = [
   { name: 'Dr. Amara Nwosu', email: 'amara@nephrotrack.ng', password: 'demo123', role: 'clinician'       },
   { name: 'Tunde Adeyemi',   email: 'tunde@nephrotrack.ng', password: 'demo123', role: 'admin'            },
   { name: 'Ngozi Okafor',    email: 'ngozi@nephrotrack.ng', password: 'demo123', role: 'records_officer'  },
-  { name: 'Emeka Chukwu',    email: 'emeka@nephrotrack.ng', password: 'demo123', role: 'billing'          },
 ];
 
 async function seed() {
@@ -47,7 +46,7 @@ async function seed() {
       console.log(`  ✅  ${created.role.padEnd(16)} │ ${created.name.padEnd(22)} │ ${created.email}`);
     }
 
-    console.log('\n✔  Seed complete — all 4 demo accounts are ready.');
+    console.log('\n✔  Seed complete — all 3 demo accounts are ready.');
     console.log('   Default password for all accounts: demo123\n');
   } catch (err) {
     console.error('❌  Seed failed:', err.message);

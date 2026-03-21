@@ -10,7 +10,6 @@ import PatientProfile     from './pages/PatientProfile';
 import ClinicalVisit      from './pages/ClinicalVisit';
 import CKDPrediction      from './pages/CKDPrediction';
 import Reports            from './pages/Reports';
-import Billing            from './pages/Billing';
 import Admin              from './pages/Admin';
 
 export default function App() {
@@ -27,7 +26,6 @@ export default function App() {
             <Route path="/visits/new"        element={<ClinicalVisit />} />
             <Route path="/prediction"        element={<CKDPrediction />} />
             <Route path="/reports"           element={<Reports />} />
-            <Route path="/billing"           element={<Billing />} />
             <Route path="/admin"             element={<Admin />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

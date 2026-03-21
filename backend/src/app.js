@@ -5,7 +5,6 @@ const authRoutes        = require('./routes/auth.routes');
 const patientRoutes     = require('./routes/patients.routes');
 const visitRoutes       = require('./routes/visits.routes');
 const predictionRoutes  = require('./routes/predictions.routes');
-const billingRoutes     = require('./routes/billing.routes');
 const userRoutes        = require('./routes/users.routes');
 const errorHandler      = require('./middleware/errorHandler');
 
@@ -19,7 +18,6 @@ app.use('/api/auth',        authRoutes);
 app.use('/api/patients',    patientRoutes);
 app.use('/api/visits',      visitRoutes);
 app.use('/api/predictions', predictionRoutes);
-app.use('/api/billing',     billingRoutes);
 app.use('/api/users',       userRoutes);
 
 // Health check
