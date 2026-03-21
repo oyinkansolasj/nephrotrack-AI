@@ -1,109 +1,177 @@
-import { useState } from 'react';
-import { Brain, AlertTriangle, CheckCircle, Info, Loader, RotateCcw, FileDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Brain, AlertTriangle, CheckCircle, Info, Loader, Loader2, RotateCcw, FileDown } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { predictionFeatures } from '../config/predictionConfig';
+import { useAuth } from '../context/AuthContext';
 
-// TODO: Replace with → GET /api/patients (for auto-fill dropdown)
-//                       POST /api/predictions (to run & save prediction)
-const patients = [];
+const API    = 'http://localhost:5000/api';
+const ML_API = 'http://localhost:8000';        // FastAPI ML service
 
 export default function CKDPrediction() {
-  const [formValues, setFormValues] = useState({});
-  const [selectedPatient, setSelectedPatient] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState(null);
+  const { getToken } = useAuth();
 
-  const handlePatientSelect = (e) => {
+  const [patients,        setPatients]        = useState([]);
+  const [patientsLoading, setPatientsLoading] = useState(true);
+  const [formValues,      setFormValues]      = useState({});
+  const [selectedPatient, setSelectedPatient] = useState('');
+  const [isProcessing,    setIsProcessing]    = useState(false);
+  const [result,          setResult]          = useState(null);
+  const [saving,          setSaving]          = useState(false);
+  const [saved,           setSaved]           = useState(false);
+
+  // ── Load patient list for dropdown ─────────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API}/patients`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      .then(r => r.json())
+      .then(data => setPatients(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setPatientsLoading(false));
+  }, [getToken]);
+
+  // ── Auto-fill form when a patient is selected ───────────────────────────────
+  const handlePatientSelect = async (e) => {
     const id = e.target.value;
     setSelectedPatient(id);
-    if (id) {
-      const p = patients.find(pt => pt.id === id);
-      if (p) {
-        const [sys, dia] = p.vitals.bloodPressure.split('/');
-        setFormValues({
-          Age: p.age || new Date().getFullYear() - new Date(p.dob).getFullYear(),
-          'Blood Pressure (Systolic)':  parseInt(sys),
-          'Blood Pressure (Diastolic)': parseInt(dia),
-          'Blood Glucose':  p.labResults.glucose,
-          'Blood Urea (BUN)': p.labResults.bun,
-          'Serum Creatinine': p.labResults.creatinine,
-          Potassium:   p.labResults.potassium,
-          Hemoglobin:  p.labResults.hemoglobin,
-          Albumin:     p.labResults.albumin,
-          eGFR:        p.labResults.gfr,
-          Hypertension:       parseInt(sys) > 140 ? 'Yes' : 'No',
-          'Diabetes Mellitus': p.labResults.hba1c > 6.5 ? 'Yes' : 'No',
-        });
-      }
-    } else {
+    setResult(null);
+    setSaved(false);
+    if (!id) { setFormValues({}); return; }
+
+    try {
+      const res = await fetch(`${API}/patients/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const p = await res.json();
+      const labs = p.lastLabResults || {};
+      const lastV = p.lastVisit    || {};
+
+      // Calculate age from date of birth
+      const age = p.dob
+        ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+        : '';
+
+      setFormValues({
+        'Age':                          age || '',
+        'Blood Pressure (Systolic)':    lastV.bp_systolic  || '',
+        'Blood Pressure (Diastolic)':   lastV.bp_diastolic || '',
+        'Blood Glucose':                labs.glucose       || '',
+        'Blood Urea (BUN)':             labs.bun           || '',
+        'Serum Creatinine':             labs.creatinine    || '',
+        'Potassium':                    labs.potassium     || '',
+        'Hemoglobin':                   labs.hemoglobin    || '',
+        'Albumin':                      labs.albumin       || '',
+        'eGFR':                         labs.gfr           || '',
+        'Hypertension':                 p.hypertension === 'Yes' ? 'Yes' : (p.hypertension === 'No' ? 'No' : ''),
+        'Diabetes Mellitus':            p.diabetes === 'Yes' ? 'Yes' : (p.diabetes === 'No' ? 'No' : ''),
+      });
+    } catch {
       setFormValues({});
     }
-    setResult(null);
   };
 
   const handleChange = (name, value) => {
     setFormValues(f => ({ ...f, [name]: value }));
     setResult(null);
+    setSaved(false);
   };
 
-  const runPrediction = () => {
+  // ── Call the real ML prediction API ─────────────────────────────────────────
+  const runPrediction = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      const creatinine   = parseFloat(formValues['Serum Creatinine']) || 1.0;
-      const age          = parseInt(formValues['Age']) || 40;
-      const systolic     = parseInt(formValues['Blood Pressure (Systolic)']) || 120;
-      const glucose      = parseInt(formValues['Blood Glucose']) || 100;
-      const bun          = parseInt(formValues['Blood Urea (BUN)']) || 15;
-      const gfr          = parseFloat(formValues['eGFR']) || 90;
-      const hemoglobin   = parseFloat(formValues['Hemoglobin']) || 13;
-      const albumin      = parseFloat(formValues['Albumin']) || 4.0;
-      const hasDiabetes  = formValues['Diabetes Mellitus'] === 'Yes';
-      const hasHypert    = formValues['Hypertension'] === 'Yes';
+    setSaved(false);
 
-      let score = 0;
-      score += Math.min((creatinine / 5)        * 28, 28);
-      score += Math.min(((age - 18) / 82)       * 12, 12);
-      score += Math.min(((systolic - 80) / 120) * 12, 12);
-      score += Math.min(((glucose - 70) / 430)  *  8,  8);
-      score += Math.min(((bun - 5) / 95)        *  8,  8);
-      score += Math.min(((90 - gfr) / 90)       * 12, 12);
-      score += hemoglobin < 12 ? 5 : 0;
-      score += albumin < 3.5   ? 5 : 0;
-      score += hasDiabetes     ? 8 : 0;
-      score += hasHypert       ? 7 : 0;
-      score = Math.round(Math.min(Math.max(score, 5), 98));
-
+    try {
       const missing = predictionFeatures.filter(f => !formValues[f.name] && formValues[f.name] !== 0);
 
-      let riskLevel, stage, recommendation;
-      if (score < 30) {
-        riskLevel = 'Low'; stage = 'No CKD / Stage 1';
-        recommendation = 'Routine monitoring recommended. Maintain healthy lifestyle — adequate hydration, balanced diet, regular exercise. Annual kidney function screening.';
-      } else if (score < 60) {
-        riskLevel = 'Medium'; stage = 'Stage 2 / Stage 3a';
-        recommendation = 'Moderate risk detected. Recommend quarterly monitoring, blood pressure control, dietary consultation. Consider nephrology referral if trend worsens.';
-      } else {
-        riskLevel = 'High'; stage = 'Stage 3b / Stage 4+';
-        recommendation = 'High risk of CKD progression. Urgent nephrology consultation recommended. Close monitoring of GFR and creatinine required. Evaluate for renal replacement therapy preparation.';
+      // Send form values to ML backend
+      const mlRes = await fetch(`${ML_API}/predict`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          age:              parseFloat(formValues['Age'])                         || null,
+          blood_pressure:   parseFloat(formValues['Blood Pressure (Systolic)'])  || null,
+          blood_glucose:    parseFloat(formValues['Blood Glucose'])               || null,
+          blood_urea:       parseFloat(formValues['Blood Urea (BUN)'])            || null,
+          serum_creatinine: parseFloat(formValues['Serum Creatinine'])            || null,
+          potassium:        parseFloat(formValues['Potassium'])                   || null,
+          hemoglobin:       parseFloat(formValues['Hemoglobin'])                  || null,
+          albumin:          parseFloat(formValues['Albumin'])                     || null,
+          packed_cell_volume: parseFloat(formValues['eGFR'])                     || null,
+          hypertension:     formValues['Hypertension']     === 'Yes' ? 1 : 0,
+          diabetes_mellitus: formValues['Diabetes Mellitus'] === 'Yes' ? 1 : 0,
+        }),
+      });
+
+      if (!mlRes.ok) throw new Error('ML service error');
+
+      const ml = await mlRes.json();
+
+      // ml returns: { probability, risk_level, top_factors }
+      const score     = Math.round(ml.probability);
+      const riskLevel = ml.risk_level;  // 'High' | 'Medium' | 'Low'
+
+      const stageMap = {
+        High:   'Stage 3b / Stage 4+',
+        Medium: 'Stage 2 / Stage 3a',
+        Low:    'No CKD / Stage 1',
+      };
+      const recommendationMap = {
+        High:   'High risk of CKD progression. Urgent nephrology consultation recommended. Close monitoring of GFR and creatinine required. Evaluate for renal replacement therapy preparation.',
+        Medium: 'Moderate risk detected. Recommend quarterly monitoring, blood pressure control, dietary consultation. Consider nephrology referral if trend worsens.',
+        Low:    'Routine monitoring recommended. Maintain healthy lifestyle — adequate hydration, balanced diet, regular exercise. Annual kidney function screening.',
+      };
+
+      const featureImportance = Object.entries(ml.top_factors || {}).map(([feature, importance]) => ({
+        feature,
+        importance,
+        value: formValues[feature] ?? '—',
+      }));
+
+      setResult({
+        score,
+        riskLevel,
+        stage:          stageMap[riskLevel],
+        recommendation: recommendationMap[riskLevel],
+        featureImportance,
+        missing,
+      });
+
+      // ── Save to DB if a patient is selected ────────────────────────────────
+      if (selectedPatient) {
+        setSaving(true);
+        try {
+          await fetch(`${API}/predictions`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+            body: JSON.stringify({
+              patientId:      selectedPatient,
+              riskScore:      score,
+              riskLevel:      riskLevel,
+              ckdStage:       stageMap[riskLevel],
+              recommendation: recommendationMap[riskLevel],
+              inputs:         formValues,
+            }),
+          });
+          setSaved(true);
+        } catch {
+          // Result is still displayed — DB save is best-effort
+        } finally {
+          setSaving(false);
+        }
       }
 
-      const featureImportance = [
-        { feature: 'Serum Creatinine', importance: 0.26, value: creatinine },
-        { feature: 'eGFR',             importance: 0.22, value: gfr },
-        { feature: 'Blood Glucose',    importance: 0.14, value: glucose },
-        { feature: 'Blood Pressure',   importance: 0.12, value: systolic },
-        { feature: 'BUN',              importance: 0.10, value: bun },
-        { feature: 'Age',              importance: 0.08, value: age },
-        { feature: 'Diabetes',         importance: 0.05, value: hasDiabetes ? 'Yes' : 'No' },
-        { feature: 'Hypertension',     importance: 0.03, value: hasHypert ? 'Yes' : 'No' },
-      ];
-
-      setResult({ score, riskLevel, stage, recommendation, featureImportance, missing });
+    } catch {
+      setResult({ error: true });
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
-  const resetForm = () => { setFormValues({}); setSelectedPatient(''); setResult(null); };
+  const resetForm = () => {
+    setFormValues({});
+    setSelectedPatient('');
+    setResult(null);
+    setSaved(false);
+  };
 
   const ringColor = {
     High:   'border-red-400 bg-red-50',
@@ -115,7 +183,7 @@ export default function CKDPrediction() {
 
   return (
     <div className="min-h-screen">
-      <Header title="CKD Risk Prediction" subtitle="AI prediction kidney disease risk assessment" />
+      <Header title="CKD Risk Prediction" subtitle="AI-assisted kidney disease risk assessment" />
       <div className="p-8">
         {/* Disclaimer */}
         <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-6 flex items-start gap-3">
@@ -137,12 +205,19 @@ export default function CKDPrediction() {
                 <Brain className="w-5 h-5 text-brand-600" />
                 <h3 className="font-semibold text-slate-800">Patient Clinical Data</h3>
               </div>
-              <select value={selectedPatient} onChange={handlePatientSelect} className="input-field w-64">
-                <option value="">— Auto-fill from patient —</option>
-                {patients.map(p => (
-                  <option key={p.id} value={p.id}>{p.id} – {p.firstName} {p.lastName}</option>
-                ))}
-              </select>
+              {/* Patient auto-fill dropdown */}
+              {patientsLoading ? (
+                <div className="input-field w-64 flex items-center gap-2 text-slate-400 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading patients…
+                </div>
+              ) : (
+                <select value={selectedPatient} onChange={handlePatientSelect} className="input-field w-64">
+                  <option value="">— Auto-fill from patient —</option>
+                  {patients.map(p => (
+                    <option key={p.id} value={p.id}>{p.id} – {p.first_name} {p.last_name}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -150,13 +225,20 @@ export default function CKDPrediction() {
                 <div key={feature.name}>
                   <label className="label">{feature.name}</label>
                   {feature.type === 'select' ? (
-                    <select value={formValues[feature.name] || ''} onChange={e => handleChange(feature.name, e.target.value)} className="input-field">
+                    <select
+                      value={formValues[feature.name] || ''}
+                      onChange={e => handleChange(feature.name, e.target.value)}
+                      className="input-field">
                       <option value="">Select</option>
                       {feature.options.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   ) : (
-                    <input type="number" step="any" value={formValues[feature.name] ?? ''} onChange={e => handleChange(feature.name, e.target.value)}
-                      className="input-field" placeholder={feature.range} />
+                    <input
+                      type="number" step="any"
+                      value={formValues[feature.name] ?? ''}
+                      onChange={e => handleChange(feature.name, e.target.value)}
+                      className="input-field"
+                      placeholder={feature.range} />
                   )}
                   <p className="text-xs text-slate-400 mt-0.5">{feature.description}</p>
                 </div>
@@ -171,6 +253,17 @@ export default function CKDPrediction() {
               <button onClick={resetForm} className="btn-secondary flex items-center gap-2">
                 <RotateCcw className="w-4 h-4" /> Reset
               </button>
+              {/* Saved indicator */}
+              {saving && (
+                <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving to record…
+                </span>
+              )}
+              {saved && !saving && (
+                <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                  <CheckCircle className="w-3.5 h-3.5" /> Saved to patient record
+                </span>
+              )}
             </div>
           </div>
 
@@ -195,7 +288,15 @@ export default function CKDPrediction() {
                 </div>
               )}
 
-              {result && (
+              {result?.error && (
+                <div className="text-center py-12">
+                  <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-red-600">ML Service Unavailable</p>
+                  <p className="text-xs text-slate-400 mt-1">Make sure the prediction server is running on port 8000</p>
+                </div>
+              )}
+
+              {result && !result.error && (
                 <div className="space-y-5">
                   {/* Score ring */}
                   <div className="text-center">
@@ -238,7 +339,8 @@ export default function CKDPrediction() {
                             <span className="text-slate-400">{(f.importance * 100).toFixed(0)}%</span>
                           </div>
                           <div className="w-full bg-slate-100 rounded-full h-1.5">
-                            <div className={`h-1.5 rounded-full ${f.importance > 0.2 ? 'bg-red-400' : f.importance > 0.1 ? 'bg-amber-400' : 'bg-brand-400'}`}
+                            <div
+                              className={`h-1.5 rounded-full ${f.importance > 0.2 ? 'bg-red-400' : f.importance > 0.1 ? 'bg-amber-400' : 'bg-brand-400'}`}
                               style={{ width: `${Math.min(f.importance * 300, 100)}%` }} />
                           </div>
                         </div>
