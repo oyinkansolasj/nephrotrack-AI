@@ -854,6 +854,12 @@ async function seedPatients() {
     await client.query('ALTER SEQUENCE patient_id_seq RESTART WITH 1');
     console.log('  Cleared existing patients.\n');
 
+    // Shuffle so patient IDs are not grouped by risk level
+    for (let i = PATIENTS.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [PATIENTS[i], PATIENTS[j]] = [PATIENTS[j], PATIENTS[i]];
+    }
+
     for (const p of PATIENTS) {
       await client.query('BEGIN');
 
