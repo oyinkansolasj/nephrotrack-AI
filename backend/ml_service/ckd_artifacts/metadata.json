@@ -1,0 +1,29 @@
+{
+  "model_name": "Tuned Random Forest",
+  "selected_features": [
+    "hemoglobin",
+    "packed_cell_volume",
+    "serum_creatinine",
+    "red_blood_cell_count",
+    "albumin",
+    "hypertension",
+    "diabetes_mellitus",
+    "sodium",
+    "blood_urea",
+    "blood_glucose_random",
+    "age",
+    "blood_pressure"
+  ],
+  "performance": {
+    "accuracy": 0.975,
+    "precision": 0.98,
+    "recall": 0.98,
+    "f1_score": 0.98,
+    "auc_roc": 0.998
+  },
+  "risk_levels": {
+    "HIGH": "probability >= 70%",
+    "MEDIUM": "probability 40% to 69%",
+    "LOW": "probability < 40%"
+  }
+}
