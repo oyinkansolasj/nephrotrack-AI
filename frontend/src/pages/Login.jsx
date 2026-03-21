@@ -29,11 +29,10 @@ export default function Login() {
     clinician:       'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200',
     admin:           'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200',
     records_officer: 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200',
-    billing:         'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200',
   };
   const roleLabels = {
     clinician: 'Clinician', admin: 'Admin',
-    records_officer: 'Records Officer', billing: 'Billing',
+    records_officer: 'Records Officer',
   };
 
   const fillDemo = (demoEmail) => {

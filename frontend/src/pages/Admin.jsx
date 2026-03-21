@@ -9,13 +9,11 @@ const roleBadge = {
   clinician:       'badge-info',
   admin:           'bg-brand-100 text-brand-800 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
   records_officer: 'badge-gray',
-  billing:         'badge-medium',
 };
 const roleLabel = {
   clinician:       'Clinician',
   admin:           'Admin',
   records_officer: 'Records Officer',
-  billing:         'Billing',
 };
 
 const fmtDt = (iso) => iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -116,12 +114,11 @@ export default function Admin() {
             <Shield className="w-4 h-4 text-brand-600" />
             <h3 className="font-semibold text-slate-800">Role-Based Access Control (RBAC)</h3>
           </div>
-          <div className="grid grid-cols-4 gap-4 text-xs">
+          <div className="grid grid-cols-3 gap-4 text-xs">
             {[
               { role: 'Admin',           perms: ['User management', 'All reports', 'System config', 'View all data'], color: 'border-brand-300 bg-brand-50' },
               { role: 'Clinician',       perms: ['Create visit', 'Run prediction', 'View patients', 'Clinical notes'], color: 'border-blue-300 bg-blue-50' },
               { role: 'Records Officer', perms: ['Register patient', 'Update demographics', 'View patient list'], color: 'border-slate-300 bg-slate-50' },
-              { role: 'Billing',         perms: ['View invoices', 'Record payments', 'Billing reports'], color: 'border-amber-300 bg-amber-50' },
             ].map(r => (
               <div key={r.role} className={`rounded-lg border p-3 ${r.color}`}>
                 <p className="font-semibold text-slate-800 mb-2">{r.role}</p>
@@ -152,7 +149,6 @@ export default function Admin() {
               <option value="clinician">Clinician</option>
               <option value="admin">Admin</option>
               <option value="records_officer">Records Officer</option>
-              <option value="billing">Billing</option>
             </select>
             <button onClick={() => setShowInvite(true)} className="btn-primary flex items-center gap-2">
               <UserPlus className="w-4 h-4" /> Add User
@@ -238,7 +234,6 @@ export default function Admin() {
                     <option value="clinician">Clinician</option>
                     <option value="admin">Admin</option>
                     <option value="records_officer">Records Officer</option>
-                    <option value="billing">Billing</option>
                   </select>
                 </div>
                 {inviteError && (

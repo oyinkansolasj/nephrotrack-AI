@@ -1,7 +1,7 @@
 const pool   = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-const VALID_ROLES = ['clinician', 'admin', 'records_officer', 'billing'];
+const VALID_ROLES = ['clinician', 'admin', 'records_officer'];
 
 // ─── GET /api/users ───────────────────────────────────────────────────────────
 // Returns all staff accounts (no password_hash). Admin only.

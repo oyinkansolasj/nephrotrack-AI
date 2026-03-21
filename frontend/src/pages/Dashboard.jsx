@@ -103,12 +103,6 @@ export default function Dashboard() {
       { label: 'Pending Predictions',    value: pendingLabReviews,    icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'No assessment yet' },
       { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Flagged' },
     ],
-    billing: [
-      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Active' },
-      { label: 'Visits Recorded',        value: visits.length,        icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'Billable visits' },
-      { label: 'Predictions This Month', value: predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: 'AI services' },
-      { label: 'Pending Predictions',    value: pendingLabReviews,    icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'No assessment yet' },
-    ],
   };
 
   const roleStats = statsByRole[currentUser?.role] || statsByRole.clinician;

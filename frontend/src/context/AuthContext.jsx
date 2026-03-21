@@ -78,5 +78,4 @@ export const DEMO_ACCOUNTS = [
   { role: 'clinician',       email: 'amara@nephrotrack.ng' },
   { role: 'admin',           email: 'tunde@nephrotrack.ng' },
   { role: 'records_officer', email: 'ngozi@nephrotrack.ng' },
-  { role: 'billing',         email: 'emeka@nephrotrack.ng' },
 ];
