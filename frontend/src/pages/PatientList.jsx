@@ -1,32 +1,59 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, UserPlus, Filter, ChevronRight } from 'lucide-react';
+import { Search, UserPlus, Filter, ChevronRight, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
 
-// TODO: Replace with → GET /api/patients
-const patients = [];
-
 const riskBadge = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
+
+// Format a DOB string (YYYY-MM-DDT...) → DD MMM YYYY
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
 
 export default function PatientList() {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
-  const [search, setSearch] = useState('');
-  const [riskFilter, setRiskFilter] = useState('all');
+  const { currentUser, getToken } = useAuth();
+
+  const [patients,     setPatients]     = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState('');
+  const [search,       setSearch]       = useState('');
+  const [riskFilter,   setRiskFilter]   = useState('all');
   const [genderFilter, setGenderFilter] = useState('all');
 
   const canRegister = ['admin', 'records_officer'].includes(currentUser?.role);
 
+  // ── Fetch patients from backend ──────────────────────────────────────────
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/patients', {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        if (!res.ok) throw new Error('Failed to load patients');
+        const data = await res.json();
+        setPatients(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+  }, [getToken]);
+
+  // ── Filter logic ──────────────────────────────────────────────────────────
   const filtered = patients.filter(p => {
     const q = search.toLowerCase();
     const matchSearch = !q ||
-      p.firstName.toLowerCase().includes(q) ||
-      p.lastName.toLowerCase().includes(q) ||
-      p.id.toLowerCase().includes(q) ||
-      p.phone.includes(q);
-    const matchRisk   = riskFilter === 'all' || p.ckdRisk === riskFilter;
-    const matchGender = genderFilter === 'all' || p.gender === genderFilter;
+      p.first_name.toLowerCase().includes(q) ||
+      p.last_name.toLowerCase().includes(q)  ||
+      p.id.toLowerCase().includes(q)         ||
+      (p.phone || '').includes(q);
+    const matchRisk   = riskFilter   === 'all' || p.ckd_risk   === riskFilter;
+    const matchGender = genderFilter === 'all' || p.gender     === genderFilter;
     return matchSearch && matchRisk && matchGender;
   });
 
@@ -34,9 +61,17 @@ export default function PatientList() {
     <div className="min-h-screen">
       <Header
         title="Patient Registry"
-        subtitle={`${patients.length} patients registered`}
+        subtitle={loading ? 'Loading…' : `${patients.length} patient${patients.length !== 1 ? 's' : ''} registered`}
       />
       <div className="p-8">
+
+        {/* Error banner */}
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            {error}
+          </div>
+        )}
+
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <div className="relative flex-1 min-w-64">
@@ -82,13 +117,24 @@ export default function PatientList() {
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Contact</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">CKD Stage</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Risk</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Last Visit</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Registered</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-12 text-slate-400">No patients found</td></tr>
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-12 text-slate-400">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    Loading patients…
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={9} className="text-center py-12 text-slate-400">
+                  {search || riskFilter !== 'all' || genderFilter !== 'all'
+                    ? 'No patients match your filters'
+                    : 'No patients registered yet'}
+                </td></tr>
               ) : filtered.map(p => (
                 <tr key={p.id}
                   onClick={() => navigate(`/patients/${p.id}`)}
@@ -96,18 +142,22 @@ export default function PatientList() {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-semibold text-sm flex-shrink-0">
-                        {p.firstName[0]}{p.lastName[0]}
+                        {p.first_name[0]}{p.last_name[0]}
                       </div>
-                      <span className="font-medium text-slate-800">{p.firstName} {p.lastName}</span>
+                      <span className="font-medium text-slate-800">{p.first_name} {p.last_name}</span>
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{p.id}</td>
                   <td className="px-5 py-3.5 text-slate-600">{p.gender}</td>
-                  <td className="px-5 py-3.5 text-slate-600">{p.dob}</td>
-                  <td className="px-5 py-3.5 text-slate-600">{p.phone}</td>
-                  <td className="px-5 py-3.5 text-slate-700 font-medium">{p.ckdStage}</td>
-                  <td className="px-5 py-3.5"><span className={riskBadge[p.ckdRisk]}>{p.ckdRisk.charAt(0).toUpperCase() + p.ckdRisk.slice(1)}</span></td>
-                  <td className="px-5 py-3.5 text-slate-500">{p.lastVisit}</td>
+                  <td className="px-5 py-3.5 text-slate-600">{formatDate(p.dob)}</td>
+                  <td className="px-5 py-3.5 text-slate-600">{p.phone_code} {p.phone}</td>
+                  <td className="px-5 py-3.5 text-slate-700 font-medium">{p.ckd_stage ?? '—'}</td>
+                  <td className="px-5 py-3.5">
+                    {p.ckd_risk
+                      ? <span className={riskBadge[p.ckd_risk]}>{p.ckd_risk.charAt(0).toUpperCase() + p.ckd_risk.slice(1)}</span>
+                      : <span className="text-slate-400 text-xs">Pending</span>}
+                  </td>
+                  <td className="px-5 py-3.5 text-slate-500">{formatDate(p.created_at)}</td>
                   <td className="px-5 py-3.5"><ChevronRight className="w-4 h-4 text-slate-400" /></td>
                 </tr>
               ))}

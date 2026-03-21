@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, CheckCircle, ArrowLeft } from 'lucide-react';
 import Header from '../components/layout/Header';
+import { useAuth } from '../context/AuthContext';
 
 const COUNTRY_CODES = [
   { code: '+234', label: '+234 (Nigeria)' },
@@ -44,19 +45,39 @@ const initForm = {
 };
 
 export default function PatientRegistration() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState(initForm);
+  const navigate  = useNavigate();
+  const { getToken } = useAuth();
+  const [form, setForm]       = useState(initForm);
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise(r => setTimeout(r, 900));
+    setError('');
+    try {
+      const res = await fetch('http://localhost:5000/api/patients', {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || 'Failed to register patient.');
+        setLoading(false);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setError('Could not reach the server. Is the backend running?');
+    }
     setLoading(false);
-    setSubmitted(true);
   };
 
   if (submitted) {
@@ -187,6 +208,12 @@ export default function PatientRegistration() {
               </div>
             </div>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+              {error}
+            </div>
+          )}
 
           <div className="flex items-center gap-3">
             <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2 px-6">

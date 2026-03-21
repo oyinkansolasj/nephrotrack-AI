@@ -2,42 +2,70 @@ import { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
-const STORAGE_KEY = 'nephrotrack_user_id';
-
-// ─── Demo accounts (UI only — will be replaced by real API auth) ──────────────
-const DEMO_USERS = {
-  U001: { id: 'U001', name: 'Dr. Amara Nwosu',  email: 'amara@nephrotrack.ng',  password: 'demo123', role: 'clinician' },
-  U002: { id: 'U002', name: 'Tunde Adeyemi',    email: 'tunde@nephrotrack.ng',  password: 'demo123', role: 'admin' },
-  U003: { id: 'U003', name: 'Ngozi Okafor',     email: 'ngozi@nephrotrack.ng',  password: 'demo123', role: 'records_officer' },
-  U004: { id: 'U004', name: 'Emeka Chukwu',     email: 'emeka@nephrotrack.ng',  password: 'demo123', role: 'billing' },
-};
+const TOKEN_KEY = 'nephrotrack_token';
+const USER_KEY  = 'nephrotrack_user';
+const API_BASE  = 'http://localhost:5000/api';
 
 export function AuthProvider({ children }) {
+  // Restore session from localStorage on page refresh
   const [currentUser, setCurrentUser] = useState(() => {
-    const savedId = localStorage.getItem(STORAGE_KEY);
-    return savedId ? (DEMO_USERS[savedId] ?? null) : null;
+    try {
+      const stored = localStorage.getItem(USER_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
-  const login = (email, password) => {
-    // TODO: Replace with real API call → POST /api/auth/login
-    const user = Object.values(DEMO_USERS).find(
-      (u) => u.email === email && u.password === password
-    );
-    if (!user) return { success: false, message: 'Invalid email or password.' };
-    const { password: _, ...safeUser } = user; // strip password from state
-    setCurrentUser(safeUser);
-    localStorage.setItem(STORAGE_KEY, safeUser.id);
-    return { success: true };
+  // ── login ──────────────────────────────────────────────────────────────────
+  const login = async (email, password) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, message: data.message || 'Login failed' };
+      }
+
+      // Persist token + user in localStorage
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(USER_KEY,  JSON.stringify(data.user));
+      setCurrentUser(data.user);
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: 'Could not reach the server. Is the backend running?' };
+    }
   };
 
-  const logout = () => {
+  // ── logout ─────────────────────────────────────────────────────────────────
+  const logout = async () => {
+    // Fire-and-forget — JWT is stateless, just clear client storage
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) {
+        fetch(`${API_BASE}/auth/logout`, {
+          method:  'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    } catch { /* ignore network errors on logout */ }
+
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setCurrentUser(null);
-    localStorage.removeItem(STORAGE_KEY);
-    // TODO: Call POST /api/auth/logout to invalidate server session
   };
+
+  // ── helper: get stored token (used by API calls throughout the app) ────────
+  const getToken = () => localStorage.getItem(TOKEN_KEY);
 
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, login, logout, getToken }}>
       {children}
     </AuthContext.Provider>
   );
