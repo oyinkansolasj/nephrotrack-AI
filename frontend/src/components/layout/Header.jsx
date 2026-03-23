@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, LogOut, User, ChevronDown } from 'lucide-react';
+import { Search, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 

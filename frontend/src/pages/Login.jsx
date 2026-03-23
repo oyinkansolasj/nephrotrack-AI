@@ -19,7 +19,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     await new Promise(r => setTimeout(r, 600));
-    const result = login(email, password);
+    const result = await login(email, password);
     setLoading(false);
     if (result.success) navigate('/dashboard');
     else setError(result.message);

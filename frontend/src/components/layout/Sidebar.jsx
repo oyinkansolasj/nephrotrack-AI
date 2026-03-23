@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, UserPlus, ClipboardList,
+  LayoutDashboard, Users, UserPlus,
   Brain, BarChart3, Settings, LogOut,
   Activity, Stethoscope,
 } from 'lucide-react';

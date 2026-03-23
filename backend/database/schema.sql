@@ -11,10 +11,9 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ENUM TYPES
 -- =============================================================================
 
-CREATE TYPE user_role       AS ENUM ('clinician', 'admin', 'records_officer', 'billing');
+CREATE TYPE user_role       AS ENUM ('clinician', 'admin', 'records_officer');
 CREATE TYPE visit_type      AS ENUM ('Routine', 'Follow-up', 'Consultation', 'Emergency');
 CREATE TYPE risk_level      AS ENUM ('low', 'medium', 'high');
-CREATE TYPE invoice_status  AS ENUM ('pending', 'paid', 'overdue');
 CREATE TYPE yes_no_unknown  AS ENUM ('Yes', 'No', 'Unknown');
 
 
@@ -281,26 +280,6 @@ CREATE TABLE predictions (
 
 
 -- =============================================================================
--- TABLE 6: invoices
--- Billing records per patient
--- =============================================================================
-
-CREATE TABLE invoices (
-  id            UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-  patient_id    VARCHAR(10)   NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-  created_by    UUID          REFERENCES users(id) ON DELETE SET NULL,
-
-  description   TEXT          NOT NULL,
-  amount        NUMERIC(12,2) NOT NULL,       -- in ₦
-  status        invoice_status NOT NULL DEFAULT 'pending',
-  due_date      DATE,
-
-  created_at    TIMESTAMP     NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMP     NOT NULL DEFAULT NOW()
-);
-
-
--- =============================================================================
 -- INDEXES  (for frequently queried columns)
 -- =============================================================================
 
@@ -310,12 +289,10 @@ CREATE INDEX idx_visits_date          ON visits(visit_date);
 CREATE INDEX idx_lab_results_visit    ON lab_results(visit_id);
 CREATE INDEX idx_lab_results_patient  ON lab_results(patient_id);
 CREATE INDEX idx_predictions_patient  ON predictions(patient_id);
-CREATE INDEX idx_invoices_patient     ON invoices(patient_id);
-CREATE INDEX idx_invoices_status      ON invoices(status);
 
 
 -- =============================================================================
--- AUTO-UPDATE updated_at  (patients + invoices)
+-- AUTO-UPDATE updated_at  (patients)
 -- =============================================================================
 
 CREATE OR REPLACE FUNCTION set_updated_at()
@@ -328,8 +305,4 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_patients_updated_at
   BEFORE UPDATE ON patients
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-CREATE TRIGGER trg_invoices_updated_at
-  BEFORE UPDATE ON invoices
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();

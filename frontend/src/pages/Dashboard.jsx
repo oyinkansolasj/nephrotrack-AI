@@ -72,7 +72,7 @@ export default function Dashboard() {
   const todayVisits = visits.filter(v =>
     v.visit_date && v.visit_date.startsWith(todayStr())
   );
-  const recentVisits = visits
+  const recentVisits = [...visits]
     .sort((a, b) => new Date(b.visit_date) - new Date(a.visit_date))
     .slice(0, 8);
 
@@ -214,7 +214,7 @@ export default function Dashboard() {
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 flex items-center gap-3">
           <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
           <p className="text-xs text-amber-800">
-            <strong>Disclaimer:</strong> NephroTrack predictions is a decision support tool only and must not replace professional medical diagnosis or clinical judgment.
+            <strong>Disclaimer:</strong> NephroTrack is a decision support tool only and must not replace professional medical diagnosis or clinical judgment.
           </p>
         </div>
       </div>

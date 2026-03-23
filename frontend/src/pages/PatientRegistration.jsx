@@ -94,7 +94,7 @@ export default function PatientRegistration() {
               <strong>{form.firstName} {form.lastName}</strong> has been successfully registered in the system.
             </p>
             <div className="flex gap-3 justify-center">
-              <button onClick={() => setSubmitted(false)} className="btn-secondary">Register Another</button>
+              <button onClick={() => { setForm(initForm); setSubmitted(false); }} className="btn-secondary">Register Another</button>
               <button onClick={() => navigate('/patients')} className="btn-primary">View Patient Registry</button>
             </div>
           </div>

@@ -17,9 +17,9 @@ const pool = new Pool({
 });
 
 const DEMO_USERS = [
-  { name: 'Dr. Amara Nwosu', email: 'amara@nephrotrack.ng', password: 'demo123', role: 'clinician'       },
-  { name: 'Tunde Adeyemi',   email: 'tunde@nephrotrack.ng', password: 'demo123', role: 'admin'            },
-  { name: 'Ngozi Okafor',    email: 'ngozi@nephrotrack.ng', password: 'demo123', role: 'records_officer'  },
+  { name: 'Dr. Amara Nwosu', email: 'amara@nephrotrack.ng', password: 'hollyJackson32', role: 'clinician'       },
+  { name: 'Tunde Adeyemi',   email: 'tunde@nephrotrack.ng', password: 'mcFadden!',      role: 'admin'            },
+  { name: 'Ngozi Okafor',    email: 'ngozi@nephrotrack.ng', password: 'James5clear',    role: 'records_officer'  },
 ];
 
 async function seed() {
@@ -47,7 +47,7 @@ async function seed() {
     }
 
     console.log('\n✔  Seed complete — all 3 demo accounts are ready.');
-    console.log('   Default password for all accounts: demo123\n');
+    console.log('   Accounts seeded with individual passwords.\n');
   } catch (err) {
     console.error('❌  Seed failed:', err.message);
     process.exit(1);

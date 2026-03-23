@@ -73,9 +73,3 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => useContext(AuthContext);
 
-// ─── Demo email hints (for the Login page quick-access buttons) ───────────────
-export const DEMO_ACCOUNTS = [
-  { role: 'clinician',       email: 'amara@nephrotrack.ng' },
-  { role: 'admin',           email: 'tunde@nephrotrack.ng' },
-  { role: 'records_officer', email: 'ngozi@nephrotrack.ng' },
-];
