@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Activity, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { useAuth, DEMO_ACCOUNTS } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const { currentUser, login } = useAuth();
@@ -23,22 +23,6 @@ export default function Login() {
     setLoading(false);
     if (result.success) navigate('/dashboard');
     else setError(result.message);
-  };
-
-  const roleStyles = {
-    clinician:       'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200',
-    admin:           'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200',
-    records_officer: 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200',
-  };
-  const roleLabels = {
-    clinician: 'Clinician', admin: 'Admin',
-    records_officer: 'Records Officer',
-  };
-
-  const fillDemo = (demoEmail) => {
-    setEmail(demoEmail);
-    setPassword('demo123');
-    setError('');
   };
 
   return (
@@ -88,18 +72,7 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo quick-access */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <p className="text-xs text-slate-500 text-center mb-3 font-medium">Quick demo access</p>
-            <div className="grid grid-cols-2 gap-2">
-              {DEMO_ACCOUNTS.map(({ role, email: demoEmail }) => (
-                <button key={role} onClick={() => fillDemo(demoEmail)}
-                  className={`text-xs font-medium px-3 py-2 rounded-lg border transition-colors ${roleStyles[role]}`}>
-                  {roleLabels[role]}
-                </button>
-              ))}
-            </div>
-          </div>
+
         </div>
 
         <p className="text-center text-brand-400 text-xs mt-6">

@@ -74,7 +74,7 @@ export default function Dashboard() {
   );
   const recentVisits = visits
     .sort((a, b) => new Date(b.visit_date) - new Date(a.visit_date))
-    .slice(0, 4);
+    .slice(0, 8);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -148,7 +148,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="divide-y divide-slate-50">
-                {highRiskList.slice(0, 5).map(p => (
+                {highRiskList.slice(0, 10).map(p => (
                   <div key={p.id} onClick={() => navigate(`/patients/${p.id}`)}
                     className="px-6 py-3.5 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors">
                     <div className="flex items-center gap-3">

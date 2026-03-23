@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 // ── POST /api/predictions ─────────────────────────────────────────────────────
-// Receives mock-scored result from frontend, persists to DB,
+// Receives ML prediction result from frontend, persists to DB,
 // and updates patient's ckd_stage + ckd_risk summary columns.
 const runPrediction = async (req, res, next) => {
   try {
@@ -11,8 +11,7 @@ const runPrediction = async (req, res, next) => {
       riskLevel,      // 'Low' | 'Medium' | 'High'  (frontend capitalised)
       ckdStage,
       recommendation,
-      inputs,         // { age, bpSystolic, bpDiastolic, glucose, bun, creatinine,
-                      //   potassium, hemoglobin, albumin, gfr, hypertension, diabetes }
+      inputs,         // all 51 ML feature values (numeric)
     } = req.body;
 
     if (!patientId || riskScore === undefined || !riskLevel || !ckdStage || !recommendation) {
@@ -25,32 +24,115 @@ const runPrediction = async (req, res, next) => {
     const { rows } = await pool.query(
       `INSERT INTO predictions (
          patient_id, run_by,
-         input_age, input_bp_systolic, input_bp_diastolic,
-         input_glucose, input_bun, input_creatinine,
-         input_potassium, input_hemoglobin, input_albumin, input_gfr,
-         input_hypertension, input_diabetes,
+         -- Demographics
+         input_age, input_gender, input_ethnicity,
+         input_socioeconomic_status, input_education_level, input_bmi,
+         -- Lifestyle
+         input_smoking, input_alcohol_consumption,
+         input_physical_activity, input_diet_quality, input_sleep_quality,
+         -- Medical history
+         input_family_history_kidney, input_family_history_hypertension,
+         input_family_history_diabetes, input_previous_aki, input_uti,
+         -- Vitals
+         input_bp_systolic, input_bp_diastolic,
+         -- Lab results
+         input_fasting_blood_sugar, input_hba1c, input_creatinine,
+         input_bun, input_gfr, input_protein_in_urine, input_acr,
+         input_sodium, input_potassium, input_calcium, input_phosphorus,
+         input_hemoglobin,
+         -- Cholesterol
+         input_cholesterol_total, input_cholesterol_ldl,
+         input_cholesterol_hdl, input_cholesterol_triglycerides,
+         -- Medications
+         input_ace_inhibitors, input_diuretics, input_nsaids_use,
+         input_statins, input_antidiabetic_meds,
+         -- Symptoms
+         input_edema, input_fatigue_levels, input_nausea_vomiting,
+         input_muscle_cramps, input_itching, input_quality_of_life,
+         -- Environmental
+         input_heavy_metals_exposure, input_occupational_exposure,
+         input_water_quality, input_checkups_frequency,
+         input_medication_adherence, input_health_literacy,
+         -- Results
          risk_score, risk_level, ckd_stage, recommendation
        ) VALUES (
-         $1,  $2,  $3,  $4,  $5,
-         $6,  $7,  $8,  $9,  $10,
-         $11, $12, $13, $14,
-         $15, $16, $17, $18
+         $1,  $2,
+         $3,  $4,  $5,  $6,  $7,  $8,
+         $9,  $10, $11, $12, $13,
+         $14, $15, $16, $17, $18,
+         $19, $20,
+         $21, $22, $23, $24, $25, $26, $27,
+         $28, $29, $30, $31, $32,
+         $33, $34, $35, $36,
+         $37, $38, $39, $40, $41,
+         $42, $43, $44, $45, $46, $47,
+         $48, $49, $50, $51, $52, $53,
+         $54, $55, $56, $57
        ) RETURNING *`,
       [
         patientId,
         req.user.id,
-        inputs?.age             ?? null,
-        inputs?.bpSystolic      ?? null,
-        inputs?.bpDiastolic     ?? null,
-        inputs?.glucose         ?? null,
-        inputs?.bun             ?? null,
-        inputs?.creatinine      ?? null,
-        inputs?.potassium       ?? null,
-        inputs?.hemoglobin      ?? null,
-        inputs?.albumin         ?? null,
-        inputs?.gfr             ?? null,
-        inputs?.hypertension    != null ? inputs.hypertension    : null,
-        inputs?.diabetes        != null ? inputs.diabetes        : null,
+        // Demographics
+        inputs?.Age                     ?? null,
+        inputs?.Gender                  ?? null,
+        inputs?.Ethnicity               ?? null,
+        inputs?.SocioeconomicStatus     ?? null,
+        inputs?.EducationLevel          ?? null,
+        inputs?.BMI                     ?? null,
+        // Lifestyle
+        inputs?.Smoking                 ?? null,
+        inputs?.AlcoholConsumption      ?? null,
+        inputs?.PhysicalActivity        ?? null,
+        inputs?.DietQuality             ?? null,
+        inputs?.SleepQuality            ?? null,
+        // Medical history
+        inputs?.FamilyHistoryKidneyDisease ?? null,
+        inputs?.FamilyHistoryHypertension  ?? null,
+        inputs?.FamilyHistoryDiabetes      ?? null,
+        inputs?.PreviousAcuteKidneyInjury  ?? null,
+        inputs?.UrinaryTractInfections     ?? null,
+        // Vitals
+        inputs?.SystolicBP              ?? null,
+        inputs?.DiastolicBP             ?? null,
+        // Lab results
+        inputs?.FastingBloodSugar       ?? null,
+        inputs?.HbA1c                   ?? null,
+        inputs?.SerumCreatinine         ?? null,
+        inputs?.BUNLevels               ?? null,
+        inputs?.GFR                     ?? null,
+        inputs?.ProteinInUrine          ?? null,
+        inputs?.ACR                     ?? null,
+        inputs?.SerumElectrolytesSodium    ?? null,
+        inputs?.SerumElectrolytesPotassium ?? null,
+        inputs?.SerumElectrolytesCalcium   ?? null,
+        inputs?.SerumElectrolytesPhosphorus?? null,
+        inputs?.HemoglobinLevels          ?? null,
+        // Cholesterol
+        inputs?.CholesterolTotal          ?? null,
+        inputs?.CholesterolLDL            ?? null,
+        inputs?.CholesterolHDL            ?? null,
+        inputs?.CholesterolTriglycerides  ?? null,
+        // Medications
+        inputs?.ACEInhibitors             ?? null,
+        inputs?.Diuretics                 ?? null,
+        inputs?.NSAIDsUse                 ?? null,
+        inputs?.Statins                   ?? null,
+        inputs?.AntidiabeticMedications   ?? null,
+        // Symptoms
+        inputs?.Edema                     ?? null,
+        inputs?.FatigueLevels             ?? null,
+        inputs?.NauseaVomiting            ?? null,
+        inputs?.MuscleCramps              ?? null,
+        inputs?.Itching                   ?? null,
+        inputs?.QualityOfLifeScore        ?? null,
+        // Environmental
+        inputs?.HeavyMetalsExposure            ?? null,
+        inputs?.OccupationalExposureChemicals   ?? null,
+        inputs?.WaterQuality                   ?? null,
+        inputs?.MedicalCheckupsFrequency       ?? null,
+        inputs?.MedicationAdherence            ?? null,
+        inputs?.HealthLiteracy                 ?? null,
+        // Results
         riskScore,
         riskLevelLower,
         ckdStage,

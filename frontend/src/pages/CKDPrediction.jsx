@@ -1,14 +1,46 @@
 import { useState, useEffect } from 'react';
-import { Brain, AlertTriangle, CheckCircle, Info, Loader, Loader2, RotateCcw, FileDown } from 'lucide-react';
+import { Brain, AlertTriangle, CheckCircle, Loader, Loader2, RotateCcw, FileDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import Header from '../components/layout/Header';
-import { predictionFeatures } from '../config/predictionConfig';
+import { predictionSections, predictionFeatures, featureLabels } from '../config/predictionConfig';
 import { useAuth } from '../context/AuthContext';
 
 const API    = 'http://localhost:5000/api';
 const ML_API = 'http://localhost:8000';        // FastAPI ML service
 
+// ── Map select options to numeric values for ML ─────────────────────────────
+const SELECT_MAP = {
+  Gender:                     { Male: 0, Female: 1 },
+  Ethnicity:                  { Caucasian: 0, 'African American': 1, Asian: 2, Other: 3 },
+  SocioeconomicStatus:        { Low: 0, Middle: 1, High: 2 },
+  EducationLevel:             { None: 0, 'High School': 1, "Bachelor's": 2, Higher: 3 },
+  Smoking:                    { Yes: 1, No: 0 },
+  FamilyHistoryKidneyDisease: { Yes: 1, No: 0 },
+  FamilyHistoryHypertension:  { Yes: 1, No: 0 },
+  FamilyHistoryDiabetes:      { Yes: 1, No: 0 },
+  PreviousAcuteKidneyInjury:  { Yes: 1, No: 0 },
+  UrinaryTractInfections:     { Yes: 1, No: 0 },
+  ACEInhibitors:              { Yes: 1, No: 0 },
+  Diuretics:                  { Yes: 1, No: 0 },
+  Statins:                    { Yes: 1, No: 0 },
+  AntidiabeticMedications:    { Yes: 1, No: 0 },
+  Edema:                      { Yes: 1, No: 0 },
+  HeavyMetalsExposure:        { Yes: 1, No: 0 },
+  OccupationalExposureChemicals: { Yes: 1, No: 0 },
+  WaterQuality:               { Good: 1, Poor: 0 },
+};
+
+// ── Reverse map for display (numeric DB value → label) ──────────────────────
+const REVERSE_MAP = {};
+for (const [field, mapping] of Object.entries(SELECT_MAP)) {
+  REVERSE_MAP[field] = {};
+  for (const [label, num] of Object.entries(mapping)) {
+    REVERSE_MAP[field][num] = label;
+  }
+}
+
 export default function CKDPrediction() {
-  const { getToken } = useAuth();
+  const { getToken, currentUser } = useAuth();
 
   const [patients,        setPatients]        = useState([]);
   const [patientsLoading, setPatientsLoading] = useState(true);
@@ -18,6 +50,7 @@ export default function CKDPrediction() {
   const [result,          setResult]          = useState(null);
   const [saving,          setSaving]          = useState(false);
   const [saved,           setSaved]           = useState(false);
+  const [collapsed,       setCollapsed]       = useState({});
 
   // ── Load patient list for dropdown ─────────────────────────────────────────
   useEffect(() => {
@@ -41,8 +74,8 @@ export default function CKDPrediction() {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const p = await res.json();
-      const labs = p.lastLabResults || {};
-      const lastV = p.lastVisit    || {};
+      const labs  = p.lastLabResults || {};
+      const lastV = p.lastVisit      || {};
 
       // Calculate age from date of birth
       const age = p.dob
@@ -50,18 +83,76 @@ export default function CKDPrediction() {
         : '';
 
       setFormValues({
-        'Age':                          age || '',
-        'Blood Pressure (Systolic)':    lastV.bp_systolic  || '',
-        'Blood Pressure (Diastolic)':   lastV.bp_diastolic || '',
-        'Blood Glucose':                labs.glucose       || '',
-        'Blood Urea (BUN)':             labs.bun           || '',
-        'Serum Creatinine':             labs.creatinine    || '',
-        'Potassium':                    labs.potassium     || '',
-        'Hemoglobin':                   labs.hemoglobin    || '',
-        'Albumin':                      labs.albumin       || '',
-        'eGFR':                         labs.gfr           || '',
-        'Hypertension':                 p.hypertension === 'Yes' ? 'Yes' : (p.hypertension === 'No' ? 'No' : ''),
-        'Diabetes Mellitus':            p.diabetes === 'Yes' ? 'Yes' : (p.diabetes === 'No' ? 'No' : ''),
+        // Demographics
+        'Age':                  age || '',
+        'Gender':               p.gender === 'Male' ? 'Male' : p.gender === 'Female' ? 'Female' : '',
+        'Ethnicity':            REVERSE_MAP.Ethnicity?.[p.ethnicity] || '',
+        'SocioeconomicStatus':  REVERSE_MAP.SocioeconomicStatus?.[p.socioeconomic_status] || '',
+        'EducationLevel':       REVERSE_MAP.EducationLevel?.[p.education_level] || '',
+        'BMI':                  p.bmi || '',
+
+        // Lifestyle
+        'Smoking':              p.smoking === 1 ? 'Yes' : p.smoking === 0 ? 'No' : '',
+        'AlcoholConsumption':   p.alcohol_consumption ?? '',
+        'PhysicalActivity':     p.physical_activity ?? '',
+        'DietQuality':          p.diet_quality ?? '',
+        'SleepQuality':         p.sleep_quality ?? '',
+
+        // Medical history
+        'FamilyHistoryKidneyDisease': p.family_history_kidney_disease === 1 ? 'Yes' : p.family_history_kidney_disease === 0 ? 'No' : '',
+        'FamilyHistoryHypertension':  p.family_history_hypertension === 1 ? 'Yes' : p.family_history_hypertension === 0 ? 'No' : '',
+        'FamilyHistoryDiabetes':      p.family_history_diabetes === 1 ? 'Yes' : p.family_history_diabetes === 0 ? 'No' : '',
+        'PreviousAcuteKidneyInjury':  p.previous_acute_kidney_injury === 1 ? 'Yes' : p.previous_acute_kidney_injury === 0 ? 'No' : '',
+        'UrinaryTractInfections':     p.urinary_tract_infections === 1 ? 'Yes' : p.urinary_tract_infections === 0 ? 'No' : '',
+
+        // Vitals
+        'SystolicBP':           lastV.bp_systolic  || '',
+        'DiastolicBP':          lastV.bp_diastolic || '',
+
+        // Lab results
+        'FastingBloodSugar':    labs.glucose    || '',
+        'HbA1c':                labs.hba1c      || '',
+        'SerumCreatinine':      labs.creatinine || '',
+        'BUNLevels':            labs.bun        || '',
+        'GFR':                  labs.gfr        || '',
+        'ProteinInUrine':       labs.protein_in_urine || '',
+        'ACR':                  labs.acr        || '',
+
+        // Electrolytes
+        'SerumElectrolytesSodium':    labs.sodium    || '',
+        'SerumElectrolytesPotassium': labs.potassium || '',
+        'SerumElectrolytesCalcium':   labs.calcium   || '',
+        'SerumElectrolytesPhosphorus':labs.phosphorus || '',
+        'HemoglobinLevels':           labs.hemoglobin || '',
+
+        // Cholesterol
+        'CholesterolTotal':         labs.cholesterol_total || '',
+        'CholesterolLDL':           labs.cholesterol_ldl   || '',
+        'CholesterolHDL':           labs.cholesterol_hdl   || '',
+        'CholesterolTriglycerides': labs.cholesterol_triglycerides || '',
+
+        // Medications
+        'ACEInhibitors':          p.ace_inhibitors === 1 ? 'Yes' : p.ace_inhibitors === 0 ? 'No' : '',
+        'Diuretics':             p.diuretics === 1 ? 'Yes' : p.diuretics === 0 ? 'No' : '',
+        'NSAIDsUse':             p.nsaids_use ?? '',
+        'Statins':               p.statins === 1 ? 'Yes' : p.statins === 0 ? 'No' : '',
+        'AntidiabeticMedications': p.antidiabetic_medications === 1 ? 'Yes' : p.antidiabetic_medications === 0 ? 'No' : '',
+
+        // Symptoms
+        'Edema':                 p.edema === 1 ? 'Yes' : p.edema === 0 ? 'No' : '',
+        'FatigueLevels':         p.fatigue_levels ?? '',
+        'NauseaVomiting':        p.nausea_vomiting ?? '',
+        'MuscleCramps':          p.muscle_cramps ?? '',
+        'Itching':               p.itching ?? '',
+        'QualityOfLifeScore':    p.quality_of_life_score ?? '',
+
+        // Environmental
+        'HeavyMetalsExposure':           p.heavy_metals_exposure === 1 ? 'Yes' : p.heavy_metals_exposure === 0 ? 'No' : '',
+        'OccupationalExposureChemicals': p.occupational_exposure_chemicals === 1 ? 'Yes' : p.occupational_exposure_chemicals === 0 ? 'No' : '',
+        'WaterQuality':                  p.water_quality === 1 ? 'Good' : p.water_quality === 0 ? 'Poor' : '',
+        'MedicalCheckupsFrequency':      p.medical_checkups_frequency ?? '',
+        'MedicationAdherence':           p.medication_adherence ?? '',
+        'HealthLiteracy':                p.health_literacy ?? '',
       });
     } catch {
       setFormValues({});
@@ -74,6 +165,10 @@ export default function CKDPrediction() {
     setSaved(false);
   };
 
+  const toggleSection = (title) => {
+    setCollapsed(c => ({ ...c, [title]: !c[title] }));
+  };
+
   // ── Call the real ML prediction API ─────────────────────────────────────────
   const runPrediction = async () => {
     setIsProcessing(true);
@@ -82,32 +177,31 @@ export default function CKDPrediction() {
     try {
       const missing = predictionFeatures.filter(f => !formValues[f.name] && formValues[f.name] !== 0);
 
-      // Send form values to ML backend
+      // Convert form values to numeric for ML API
+      const mlPayload = {};
+      for (const feature of predictionFeatures) {
+        const val = formValues[feature.name];
+        if (val === '' || val === undefined || val === null) {
+          mlPayload[feature.name] = null;
+        } else if (SELECT_MAP[feature.name]) {
+          mlPayload[feature.name] = SELECT_MAP[feature.name][val] ?? null;
+        } else {
+          mlPayload[feature.name] = parseFloat(val) || null;
+        }
+      }
+
       const mlRes = await fetch(`${ML_API}/predict`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          age:              parseFloat(formValues['Age'])                         || null,
-          blood_pressure:   parseFloat(formValues['Blood Pressure (Systolic)'])  || null,
-          blood_glucose:    parseFloat(formValues['Blood Glucose'])               || null,
-          blood_urea:       parseFloat(formValues['Blood Urea (BUN)'])            || null,
-          serum_creatinine: parseFloat(formValues['Serum Creatinine'])            || null,
-          potassium:        parseFloat(formValues['Potassium'])                   || null,
-          hemoglobin:       parseFloat(formValues['Hemoglobin'])                  || null,
-          albumin:          parseFloat(formValues['Albumin'])                     || null,
-          packed_cell_volume: parseFloat(formValues['eGFR'])                     || null,
-          hypertension:     formValues['Hypertension']     === 'Yes' ? 1 : 0,
-          diabetes_mellitus: formValues['Diabetes Mellitus'] === 'Yes' ? 1 : 0,
-        }),
+        body: JSON.stringify(mlPayload),
       });
 
       if (!mlRes.ok) throw new Error('ML service error');
 
       const ml = await mlRes.json();
 
-      // ml returns: { probability, risk_level, top_factors }
       const score     = Math.round(ml.probability);
-      const riskLevel = ml.risk_level;  // 'High' | 'Medium' | 'Low'
+      const riskLevel = ml.risk_level;
 
       const stageMap = {
         High:   'Stage 3b / Stage 4+',
@@ -121,7 +215,7 @@ export default function CKDPrediction() {
       };
 
       const featureImportance = Object.entries(ml.top_factors || {}).map(([feature, importance]) => ({
-        feature,
+        feature: featureLabels[feature] || feature,
         importance,
         value: formValues[feature] ?? '—',
       }));
@@ -148,7 +242,7 @@ export default function CKDPrediction() {
               riskLevel:      riskLevel,
               ckdStage:       stageMap[riskLevel],
               recommendation: recommendationMap[riskLevel],
-              inputs:         formValues,
+              inputs:         mlPayload,
             }),
           });
           setSaved(true);
@@ -173,6 +267,142 @@ export default function CKDPrediction() {
     setSaved(false);
   };
 
+  // ── Export PDF ───────────────────────────────────────────────────────────────
+  const exportPDF = () => {
+    if (!result || result.error) return;
+
+    const doc = new jsPDF();
+    const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    const patientName = selectedPatient
+      ? patients.find(p => p.id === selectedPatient)
+      : null;
+    const nameStr = patientName ? `${patientName.first_name} ${patientName.last_name} (${patientName.id})` : 'Manual Entry';
+
+    let y = 20;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NephroTrack', 105, y, { align: 'center' });
+    y += 7;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text('CKD Risk Prediction Report', 105, y, { align: 'center' });
+    y += 5;
+    doc.setDrawColor(200);
+    doc.line(20, y, 190, y);
+    y += 10;
+
+    // Patient info
+    doc.setTextColor(0);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Patient:', 20, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(nameStr, 50, y);
+    y += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', 20, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(now, 50, y);
+    y += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Assessed by:', 20, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(currentUser?.name || 'Clinician', 50, y);
+    y += 12;
+
+    // Risk result box
+    const riskColors = { High: [220, 38, 38], Medium: [217, 119, 6], Low: [22, 163, 74] };
+    const [r, g, b] = riskColors[result.riskLevel] || [0, 0, 0];
+    doc.setFillColor(r, g, b);
+    doc.roundedRect(20, y, 170, 28, 3, 3, 'F');
+    doc.setTextColor(255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${result.score}% — ${result.riskLevel} Risk`, 105, y + 12, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Predicted Stage: ${result.stage}`, 105, y + 21, { align: 'center' });
+    y += 38;
+
+    // Recommendation
+    doc.setTextColor(0);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Clinical Recommendation', 20, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const recLines = doc.splitTextToSize(result.recommendation, 170);
+    doc.text(recLines, 20, y);
+    y += recLines.length * 4.5 + 8;
+
+    // Key Risk Factors
+    if (result.featureImportance?.length > 0) {
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Key Risk Factors', 20, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      result.featureImportance.forEach(f => {
+        doc.text(`${f.feature}`, 25, y);
+        doc.text(`${(f.importance * 100).toFixed(1)}%`, 120, y);
+        // Draw bar
+        doc.setFillColor(200, 200, 200);
+        doc.rect(140, y - 3, 40, 4, 'F');
+        doc.setFillColor(r, g, b);
+        doc.rect(140, y - 3, Math.min(f.importance * 120, 40), 4, 'F');
+        y += 6;
+      });
+      y += 6;
+    }
+
+    // Clinical inputs summary
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Clinical Input Summary', 20, y);
+    y += 7;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+
+    const filledFields = predictionSections.flatMap(s => s.fields)
+      .filter(f => formValues[f.name] !== '' && formValues[f.name] !== undefined && formValues[f.name] !== null);
+
+    let col = 0;
+    filledFields.forEach(f => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      const x = col === 0 ? 20 : 110;
+      const label = featureLabels[f.name] || f.name;
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, x, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${formValues[f.name]}`, x + 45, y);
+      if (col === 1) { y += 5; col = 0; } else { col = 1; }
+    });
+    if (col === 1) y += 5;
+    y += 8;
+
+    // Footer
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.setDrawColor(200);
+    doc.line(20, y, 190, y);
+    y += 5;
+    doc.setFontSize(7);
+    doc.setTextColor(130);
+    doc.text('This report is generated by NephroTrack for clinical decision support only.', 105, y, { align: 'center' });
+    y += 4;
+    doc.text('It must not replace professional medical diagnosis or clinical judgment.', 105, y, { align: 'center' });
+
+    // Save
+    const fileName = patientName
+      ? `CKD_Report_${patientName.id}_${new Date().toISOString().slice(0, 10)}.pdf`
+      : `CKD_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+    doc.save(fileName);
+  };
+
   const ringColor = {
     High:   'border-red-400 bg-red-50',
     Medium: 'border-amber-400 bg-amber-50',
@@ -185,18 +415,6 @@ export default function CKDPrediction() {
     <div className="min-h-screen">
       <Header title="CKD Risk Prediction" subtitle="AI-assisted kidney disease risk assessment" />
       <div className="p-8">
-        {/* Disclaimer */}
-        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-          <Info className="w-5 h-5 text-brand-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-brand-900">About This Prediction Model</p>
-            <p className="text-sm text-brand-700 mt-1">
-              This module uses a supervised machine learning model trained on clinical kidney disease datasets.
-              Results are for <strong>clinical decision support only</strong> and must be interpreted alongside professional medical judgment.
-            </p>
-          </div>
-        </div>
-
         <div className="grid grid-cols-3 gap-6">
           {/* Input form */}
           <div className="col-span-2 card p-6">
@@ -220,27 +438,46 @@ export default function CKDPrediction() {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              {predictionFeatures.map(feature => (
-                <div key={feature.name}>
-                  <label className="label">{feature.name}</label>
-                  {feature.type === 'select' ? (
-                    <select
-                      value={formValues[feature.name] || ''}
-                      onChange={e => handleChange(feature.name, e.target.value)}
-                      className="input-field">
-                      <option value="">Select</option>
-                      {feature.options.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  ) : (
-                    <input
-                      type="number" step="any"
-                      value={formValues[feature.name] ?? ''}
-                      onChange={e => handleChange(feature.name, e.target.value)}
-                      className="input-field"
-                      placeholder={feature.range} />
+            {/* Grouped sections */}
+            <div className="space-y-4">
+              {predictionSections.map(section => (
+                <div key={section.title} className="border border-slate-200 rounded-lg">
+                  <button
+                    onClick={() => toggleSection(section.title)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 rounded-t-lg hover:bg-slate-100 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-slate-700">{section.title}</span>
+                    {collapsed[section.title]
+                      ? <ChevronDown className="w-4 h-4 text-slate-400" />
+                      : <ChevronUp className="w-4 h-4 text-slate-400" />
+                    }
+                  </button>
+                  {!collapsed[section.title] && (
+                    <div className="p-4 grid grid-cols-3 gap-4">
+                      {section.fields.map(feature => (
+                        <div key={feature.name}>
+                          <label className="label">{featureLabels[feature.name] || feature.name}</label>
+                          {feature.type === 'select' ? (
+                            <select
+                              value={formValues[feature.name] || ''}
+                              onChange={e => handleChange(feature.name, e.target.value)}
+                              className="input-field">
+                              <option value="">Select</option>
+                              {feature.options.map(o => <option key={o} value={o}>{o}</option>)}
+                            </select>
+                          ) : (
+                            <input
+                              type="number" step="any"
+                              value={formValues[feature.name] ?? ''}
+                              onChange={e => handleChange(feature.name, e.target.value)}
+                              className="input-field"
+                              placeholder={feature.range} />
+                          )}
+                          <p className="text-xs text-slate-400 mt-0.5">{feature.description}</p>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                  <p className="text-xs text-slate-400 mt-0.5">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -253,7 +490,6 @@ export default function CKDPrediction() {
               <button onClick={resetForm} className="btn-secondary flex items-center gap-2">
                 <RotateCcw className="w-4 h-4" /> Reset
               </button>
-              {/* Saved indicator */}
               {saving && (
                 <span className="flex items-center gap-1.5 text-xs text-slate-400">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving to record…
@@ -348,7 +584,7 @@ export default function CKDPrediction() {
                     </div>
                   </div>
 
-                  <button className="w-full btn-secondary flex items-center justify-center gap-2 text-xs">
+                  <button onClick={exportPDF} className="w-full btn-secondary flex items-center justify-center gap-2 text-xs">
                     <FileDown className="w-3.5 h-3.5" /> Export PDF Report
                   </button>
                 </div>
