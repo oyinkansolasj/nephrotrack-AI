@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UserPlus,
   Brain, BarChart3, Settings, LogOut,
-  Activity, Stethoscope,
+  Activity, Stethoscope, X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -27,17 +27,29 @@ const navByRole = {
   ],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const navItems = navByRole[currentUser?.role] || [];
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
+  const handleNavClick = () => {
+    // Close sidebar on mobile after navigation
+    onClose?.();
+  };
+
   return (
-    <aside className="w-64 min-h-screen bg-brand-950 flex flex-col flex-shrink-0">
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-brand-800">
+    <aside
+      className={`
+        fixed inset-y-0 left-0 z-40 w-64 bg-brand-950 flex flex-col flex-shrink-0
+        transform transition-transform duration-200 ease-in-out
+        lg:static lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
+    >
+      {/* Logo + mobile close */}
+      <div className="px-6 py-5 border-b border-brand-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
             <Activity className="w-5 h-5 text-white" />
@@ -47,6 +59,12 @@ export default function Sidebar() {
             <p className="text-brand-400 text-[10px] uppercase tracking-widest">Clinical System</p>
           </div>
         </div>
+        <button
+          onClick={onClose}
+          className="lg:hidden text-brand-400 hover:text-white p-1"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* User badge */}
@@ -68,6 +86,7 @@ export default function Sidebar() {
           <NavLink
             key={to}
             to={to}
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
                 isActive
