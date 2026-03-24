@@ -119,15 +119,15 @@ export default function Dashboard() {
         subtitle={`Here's what's happening today, ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`}
       />
 
-      <div className="p-8 space-y-8">
+      <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {roleStats.map(s => <StatCard key={s.label} {...s} loading={loading} />)}
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* High Risk Patients */}
-          <div className="col-span-2 card">
+          <div className="lg:col-span-2 card">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
@@ -151,20 +151,17 @@ export default function Dashboard() {
               <div className="divide-y divide-slate-50">
                 {highRiskList.slice(0, 10).map(p => (
                   <div key={p.id} onClick={() => navigate(`/patients/${p.id}`)}
-                    className="px-6 py-3.5 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors">
-                    <div className="flex items-center gap-3">
+                    className="px-4 sm:px-6 py-3.5 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-semibold text-sm flex-shrink-0">
                         {p.first_name[0]}{p.last_name[0]}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-800">{p.first_name} {p.last_name}</p>
-                        <p className="text-xs text-slate-400">{p.id} · Registered {fmt(p.created_at)}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">{p.first_name} {p.last_name}</p>
+                        <p className="text-xs text-slate-400 truncate">{p.ckd_stage ?? '—'} · {fmt(p.created_at)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-500">{p.ckd_stage ?? '—'}</span>
-                      <span className={riskBadge[p.ckd_risk]}>● High</span>
-                    </div>
+                    <span className={`${riskBadge[p.ckd_risk]} flex-shrink-0`}>● High</span>
                   </div>
                 ))}
               </div>

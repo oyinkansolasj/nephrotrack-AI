@@ -88,14 +88,14 @@ export default function Admin() {
   return (
     <div className="min-h-screen">
       <Header title="User Management" subtitle="Manage system users, roles, and access permissions" />
-      <div className="p-8 space-y-6">
+      <div className="p-4 sm:p-8 space-y-6">
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: 'Total Users',   value: users.length,                                           color: 'text-brand-700' },
             { label: 'Active Users',  value: users.filter(u => u.is_active).length,                  color: 'text-green-700' },
@@ -115,7 +115,7 @@ export default function Admin() {
             <Shield className="w-4 h-4 text-brand-600" />
             <h3 className="font-semibold text-slate-800">Role-Based Access Control (RBAC)</h3>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             {[
               { role: 'Admin',           perms: ['User management', 'All reports', 'System config', 'View all data'], color: 'border-brand-300 bg-brand-50' },
               { role: 'Clinician',       perms: ['Create visit', 'Run prediction', 'View patients', 'Clinical notes'], color: 'border-blue-300 bg-blue-50' },
@@ -137,15 +137,18 @@ export default function Admin() {
 
         {/* User table */}
         <div className="card">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-            <Settings className="w-4 h-4 text-brand-600" />
-            <h3 className="font-semibold text-slate-800 flex-1">System Users</h3>
+          <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Settings className="w-4 h-4 text-brand-600" />
+              <h3 className="font-semibold text-slate-800">System Users</h3>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search users..." className="input-field pl-9 w-52" />
+                placeholder="Search users..." className="input-field pl-9 w-full sm:w-52" />
             </div>
-            <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="input-field w-44">
+            <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="input-field w-full sm:w-44">
               <option value="all">All Roles</option>
               <option value="clinician">Clinician</option>
               <option value="admin">Admin</option>
@@ -154,8 +157,10 @@ export default function Admin() {
             <button onClick={() => setShowInvite(true)} className="btn-primary flex items-center gap-2">
               <UserPlus className="w-4 h-4" /> Add User
             </button>
+            </div>
           </div>
 
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
@@ -201,6 +206,7 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-500">
             {filtered.length} of {users.length} users
           </div>

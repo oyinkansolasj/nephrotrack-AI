@@ -64,7 +64,7 @@ export default function PatientList() {
         title="Patient Registry"
         subtitle={loading ? 'Loading…' : `${patients.length} patient${patients.length !== 1 ? 's' : ''} registered`}
       />
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
 
         {/* Error banner */}
         {error && (
@@ -75,7 +75,7 @@ export default function PatientList() {
 
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="relative flex-1 min-w-64">
+          <div className="relative flex-1 min-w-0 sm:min-w-64">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -108,6 +108,7 @@ export default function PatientList() {
 
         {/* Table */}
         <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
@@ -164,6 +165,7 @@ export default function PatientList() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-500">
             Showing {filtered.length} of {patients.length} patients
           </div>

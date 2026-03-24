@@ -108,12 +108,12 @@ export default function PatientProfile() {
   return (
     <div className="min-h-screen">
       <Header title="Patient Profile" subtitle={`${patient.first_name} ${patient.last_name} · ${patient.id}`} />
-      <div className="p-8 space-y-6">
+      <div className="p-4 sm:p-8 space-y-6">
         <button onClick={() => navigate('/patients')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
           <ArrowLeft className="w-4 h-4" /> Back to Patient Registry
         </button>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* ── Left column ── */}
           <div className="col-span-1 space-y-4">
 
@@ -201,7 +201,7 @@ export default function PatientProfile() {
           </div>
 
           {/* ── Right column ── */}
-          <div className="col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
 
             {/* Lab Results */}
             <div className="card p-5">
@@ -210,7 +210,7 @@ export default function PatientProfile() {
                 {labs && <span className="text-xs text-slate-400 font-normal ml-auto">{fmt(labs.recorded_at)}</span>}
               </h4>
               {labs ? (
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {labFields.map(l => <Lab key={l.label} label={l.label} value={labs[l.key]} unit={l.unit} flag={l.flag} />)}
                 </div>
               ) : (
@@ -261,12 +261,12 @@ export default function PatientProfile() {
               {!patient.lastPrediction ? (
                 <p className="text-slate-400 text-sm text-center py-6">No predictions run yet</p>
               ) : (
-                <div className="flex items-center justify-between bg-slate-50 rounded-lg px-4 py-3">
-                  <div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 rounded-lg px-4 py-3 gap-2">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-slate-800">{patient.lastPrediction.ckd_stage}</p>
-                    <p className="text-xs text-slate-400">{fmt(patient.lastPrediction.created_at)} · {patient.lastPrediction.recommendation}</p>
+                    <p className="text-xs text-slate-400 break-words">{fmt(patient.lastPrediction.created_at)} · {patient.lastPrediction.recommendation}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right flex-shrink-0">
                     <p className={`text-2xl font-bold ${patient.lastPrediction.risk_level === 'high' ? 'text-red-600' : patient.lastPrediction.risk_level === 'medium' ? 'text-amber-600' : 'text-green-600'}`}>
                       {patient.lastPrediction.risk_score}%
                     </p>

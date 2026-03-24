@@ -106,7 +106,7 @@ export default function Reports() {
   return (
     <div className="min-h-screen">
       <Header title="Clinical Reports" subtitle="Risk distribution, CKD staging summary, and high-risk patient list" />
-      <div className="p-8 space-y-6">
+      <div className="p-4 sm:p-8 space-y-6">
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -239,12 +239,12 @@ export default function Reports() {
 
         {/* Patient Risk List */}
         <div className="card">
-          <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-500" />
               <h3 className="font-semibold text-slate-800">Patient Risk List</h3>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Filter className="w-4 h-4 text-slate-400" />
               <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)} className="input-field w-36">
                 <option value="all">All Risks</option>

@@ -75,8 +75,8 @@ export default function ClinicalVisit() {
   if (submitted) return (
     <div className="min-h-screen">
       <Header title="Clinical Visit" />
-      <div className="p-8 flex items-center justify-center">
-        <div className="card p-12 text-center max-w-md">
+      <div className="p-4 sm:p-8 flex items-center justify-center">
+        <div className="card p-6 sm:p-12 text-center max-w-md">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-9 h-9 text-green-600" />
           </div>
@@ -109,20 +109,20 @@ export default function ClinicalVisit() {
   return (
     <div className="min-h-screen">
       <Header title="New Clinical Visit" subtitle="Record patient visit, vitals, and lab results" />
-      <div className="p-8 max-w-4xl">
+      <div className="p-4 sm:p-8 max-w-4xl">
         <button onClick={() => navigate('/patients')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-6">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
         {/* Step indicators */}
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex flex-wrap items-center gap-2 mb-8">
           {['Patient & Visit Info', 'Vitals', 'Lab Results', 'Summary'].map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step > i + 1 ? 'bg-green-500 text-white' : step === i + 1 ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${step > i + 1 ? 'bg-green-500 text-white' : step === i + 1 ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
                 {step > i + 1 ? '✓' : i + 1}
               </div>
-              <span className={`text-sm ${step === i + 1 ? 'font-semibold text-slate-800' : 'text-slate-400'}`}>{s}</span>
-              {i < 3 && <div className="w-10 h-px bg-slate-200 mx-1" />}
+              <span className={`text-sm hidden sm:inline ${step === i + 1 ? 'font-semibold text-slate-800' : 'text-slate-400'}`}>{s}</span>
+              {i < 3 && <div className="w-6 sm:w-10 h-px bg-slate-200 mx-1" />}
             </div>
           ))}
         </div>
@@ -134,7 +134,7 @@ export default function ClinicalVisit() {
               <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                 <Stethoscope className="w-4 h-4 text-brand-600" /> Patient & Visit Information
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Select Patient <span className="text-red-500">*</span></label>
                   {patientsLoading ? (
@@ -179,7 +179,7 @@ export default function ClinicalVisit() {
           {step === 2 && (
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-800">Vital Signs</h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <InputField label="Systolic BP"   name="bp_systolic"   state={vitals} setState={setVitals} unit="mmHg" placeholder="e.g. 120" />
                 <InputField label="Diastolic BP"  name="bp_diastolic"  state={vitals} setState={setVitals} unit="mmHg" placeholder="e.g. 80" />
                 <InputField label="Pulse"         name="pulse"         state={vitals} setState={setVitals} unit="bpm"  placeholder="e.g. 72" />
@@ -194,7 +194,7 @@ export default function ClinicalVisit() {
           {step === 3 && (
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-800">Laboratory Results</h3>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <InputField label="Serum Creatinine" name="creatinine" state={labs} setState={setLabs} unit="mg/dL" />
                 <InputField label="BUN"              name="bun"        state={labs} setState={setLabs} unit="mg/dL" />
                 <InputField label="Blood Glucose"    name="glucose"    state={labs} setState={setLabs} unit="mg/dL" />
@@ -221,7 +221,7 @@ export default function ClinicalVisit() {
           {step === 4 && (
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-800">Visit Summary</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="bg-slate-50 rounded-lg p-4">
                   <p className="font-semibold text-slate-700 mb-3">Patient</p>
                   <p className="text-slate-600">{patient?.first_name} {patient?.last_name} · {patient?.id}</p>
@@ -232,9 +232,9 @@ export default function ClinicalVisit() {
                   <p className="text-slate-600">BP: {vitals.bp_systolic || '—'}/{vitals.bp_diastolic || '—'} mmHg</p>
                   <p className="text-slate-500 mt-1">Pulse: {vitals.pulse || '—'} bpm · Temp: {vitals.temperature || '—'}°C</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg p-4 col-span-2">
+                <div className="bg-slate-50 rounded-lg p-4 sm:col-span-2">
                   <p className="font-semibold text-slate-700 mb-3">Lab Results</p>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {Object.entries(labs).map(([k, v]) => v && (
                       <p key={k} className="text-slate-600 text-xs"><span className="text-slate-400 capitalize">{k}:</span> {v}</p>
                     ))}
@@ -242,7 +242,7 @@ export default function ClinicalVisit() {
                   {!Object.values(labs).some(Boolean) && <p className="text-slate-400 text-xs">No lab values entered</p>}
                 </div>
                 {notes && (
-                  <div className="bg-slate-50 rounded-lg p-4 col-span-2">
+                  <div className="bg-slate-50 rounded-lg p-4 sm:col-span-2">
                     <p className="font-semibold text-slate-700 mb-1">Notes</p>
                     <p className="text-slate-600 text-sm">{notes}</p>
                   </div>

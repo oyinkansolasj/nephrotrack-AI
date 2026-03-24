@@ -415,22 +415,22 @@ export default function CKDPrediction() {
   return (
     <div className="min-h-screen">
       <Header title="CKD Risk Prediction" subtitle="AI-assisted kidney disease risk assessment" />
-      <div className="p-8">
-        <div className="grid grid-cols-3 gap-6">
+      <div className="p-4 sm:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Input form */}
-          <div className="col-span-2 card p-6">
-            <div className="flex items-center justify-between mb-5">
+          <div className="lg:col-span-2 card p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-3">
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-brand-600" />
                 <h3 className="font-semibold text-slate-800">Patient Clinical Data</h3>
               </div>
               {/* Patient auto-fill dropdown */}
               {patientsLoading ? (
-                <div className="input-field w-64 flex items-center gap-2 text-slate-400 text-sm">
+                <div className="input-field w-full sm:w-64 flex items-center gap-2 text-slate-400 text-sm">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading patients…
                 </div>
               ) : (
-                <select value={selectedPatient} onChange={handlePatientSelect} className="input-field w-64">
+                <select value={selectedPatient} onChange={handlePatientSelect} className="input-field w-full sm:w-64">
                   <option value="">— Auto-fill from patient —</option>
                   {patients.map(p => (
                     <option key={p.id} value={p.id}>{p.id} – {p.first_name} {p.last_name}</option>
@@ -454,7 +454,7 @@ export default function CKDPrediction() {
                     }
                   </button>
                   {!collapsed[section.title] && (
-                    <div className="p-4 grid grid-cols-3 gap-4">
+                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {section.fields.map(feature => (
                         <div key={feature.name}>
                           <label className="label">{featureLabels[feature.name] || feature.name}</label>
@@ -506,7 +506,7 @@ export default function CKDPrediction() {
 
           {/* Result panel */}
           <div className="col-span-1">
-            <div className="card p-6 sticky top-8">
+            <div className="card p-4 sm:p-6 sticky top-8">
               <h3 className="font-semibold text-slate-800 mb-4">Prediction Result</h3>
 
               {isProcessing && (
