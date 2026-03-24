@@ -529,7 +529,7 @@ export default function CKDPrediction() {
                 <div className="text-center py-12">
                   <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-3" />
                   <p className="text-sm font-semibold text-red-600">ML Service Unavailable</p>
-                  <p className="text-xs text-slate-400 mt-1">Make sure the prediction server is running on port 8000</p>
+                  <p className="text-xs text-slate-400 mt-1">The prediction service may be waking up — please try again in a moment</p>
                 </div>
               )}
 
