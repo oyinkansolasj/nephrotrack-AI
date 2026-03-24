@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, CheckCircle, ArrowLeft } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config/api';
 
 const COUNTRY_CODES = [
   { code: '+234', label: '+234 (Nigeria)' },
@@ -59,7 +60,7 @@ export default function PatientRegistration() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/patients', {
+      const res = await fetch(`${API_BASE}/patients`, {
         method:  'POST',
         headers: {
           'Content-Type':  'application/json',

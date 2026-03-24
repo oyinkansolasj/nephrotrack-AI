@@ -1,10 +1,10 @@
 import { createContext, useContext, useState } from 'react';
+import { API_BASE } from '../config/api';
 
 const AuthContext = createContext(null);
 
 const TOKEN_KEY = 'nephrotrack_token';
 const USER_KEY  = 'nephrotrack_user';
-const API_BASE  = 'http://localhost:5000/api';
 
 export function AuthProvider({ children }) {
   // Restore session from localStorage on page refresh

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { BarChart3, Download, Filter, AlertTriangle, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config/api';
 
-const API = 'http://localhost:5000/api';
+const API = API_BASE;
 
 const fmt = (iso) => iso
   ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })

@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Stethoscope, CheckCircle, ArrowLeft, Brain, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config/api';
 
-const API = 'http://localhost:5000/api';
+const API = API_BASE;
 
 const initVitals = { bp_systolic: '', bp_diastolic: '', pulse: '', temperature: '', weight: '', height: '' };
 const initLabs   = { creatinine: '', bun: '', glucose: '', potassium: '', hemoglobin: '', albumin: '', hba1c: '', gfr: '' };

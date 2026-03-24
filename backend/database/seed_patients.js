@@ -10,13 +10,15 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const pool = new Pool({
-  host:     process.env.DB_HOST,
-  port:     process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user:     process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-});
+const pool = process.env.DATABASE_URL
+  ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
+  : new Pool({
+      host:     process.env.DB_HOST,
+      port:     process.env.DB_PORT,
+      database: process.env.DB_NAME,
+      user:     process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+    });
 
 // =============================================================================
 // Deterministic pseudo-random number generator (mulberry32)
@@ -426,8 +428,7 @@ async function seedPatients() {
     // Clear existing patient data (cascade handles visits, lab_results, predictions)
     await client.query('DELETE FROM predictions');
     await client.query('DELETE FROM lab_results');
-    await client.query('DELETE FROM invoices');
-    await client.query('DELETE FROM visits');
+await client.query('DELETE FROM visits');
     await client.query('DELETE FROM patients');
     await client.query('ALTER SEQUENCE patient_id_seq RESTART WITH 1');
     console.log('  Cleared existing patient data.\n');

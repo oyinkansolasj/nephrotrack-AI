@@ -4,9 +4,10 @@ import { jsPDF } from 'jspdf';
 import Header from '../components/layout/Header';
 import { predictionSections, predictionFeatures, featureLabels } from '../config/predictionConfig';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE, ML_API_BASE } from '../config/api';
 
-const API    = 'http://localhost:5000/api';
-const ML_API = 'http://localhost:8000';        // FastAPI ML service
+const API    = API_BASE;
+const ML_API = ML_API_BASE;
 
 // ── Map select options to numeric values for ML ─────────────────────────────
 const SELECT_MAP = {

@@ -1,3 +1,4 @@
+import os
 import json
 import joblib
 import numpy as np
@@ -8,10 +9,13 @@ from pydantic import BaseModel
 from typing import Optional
 
 # ── Load model artifacts once at startup ─────────────────────────────────────
-model   = joblib.load('ckd_artifacts/ckd_model.pkl')
-scaler  = joblib.load('ckd_artifacts/ckd_scaler.pkl')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ARTIFACTS = os.path.join(BASE_DIR, 'ckd_artifacts')
 
-with open('ckd_artifacts/metadata.json') as f:
+model   = joblib.load(os.path.join(ARTIFACTS, 'ckd_model.pkl'))
+scaler  = joblib.load(os.path.join(ARTIFACTS, 'ckd_scaler.pkl'))
+
+with open(os.path.join(ARTIFACTS, 'metadata.json')) as f:
     metadata = json.load(f)
 
 FEATURES = metadata['selected_features']
@@ -24,9 +28,10 @@ app = FastAPI(
 )
 
 # Allow requests from the React frontend
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173', 'http://localhost:3000'],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=['*'],
     allow_headers=['*'],
 )

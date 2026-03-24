@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, UserPlus, Filter, ChevronRight, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config/api';
 
 const riskBadge = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
 
@@ -29,7 +30,7 @@ export default function PatientList() {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/patients', {
+        const res = await fetch(`${API_BASE}/patients`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (!res.ok) throw new Error('Failed to load patients');

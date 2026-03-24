@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Settings, UserPlus, Search, Shield, CheckCircle, XCircle, Edit2, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config/api';
 
-const API = 'http://localhost:5000/api';
+const API = API_BASE;
 
 const roleBadge = {
   clinician:       'badge-info',

@@ -6,8 +6,9 @@ import {
 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config/api';
 
-const API = 'http://localhost:5000/api';
+const API = API_BASE;
 
 const riskColor = {
   high:   { badge: 'badge-high',   bar: 'bg-red-500',   ring: 'ring-red-400 bg-red-50 text-red-700' },
