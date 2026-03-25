@@ -16,8 +16,8 @@ const fmt = (iso) => iso
 
 const todayStr = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-const StatCard = ({ label, value, icon: Icon, color, sub, loading }) => (
-  <div className="card p-5 flex items-start justify-between">
+const StatCard = ({ label, value, icon: Icon, color, sub, loading, onClick }) => (
+  <div onClick={onClick} className={`card p-5 flex items-start justify-between ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}>
     <div>
       <p className="text-sm text-slate-500 font-medium">{label}</p>
       {loading
@@ -87,22 +87,22 @@ export default function Dashboard() {
   // ── Role-specific stat cards ────────────────────────────────────────────────
   const statsByRole = {
     clinician: [
-      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: `${patients.filter(p=>p.ckd_stage).length} with prediction` },
-      { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Needs attention' },
-      { label: 'Visits Recorded',        value: visits.length,        icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'All time' },
-      { label: 'Predictions This Month', value: predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: `Avg risk: ${avgRisk}%` },
+      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: `${patients.filter(p=>p.ckd_stage).length} with prediction`, onClick: () => navigate('/patients') },
+      { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Needs attention', onClick: () => navigate('/patients?filter=high-risk') },
+      { label: 'Visits Recorded',        value: visits.length,        icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'All time', onClick: () => navigate('/patients') },
+      { label: 'Predictions This Month', value: predictionsThisMonth, icon: Brain,         color: 'bg-purple-100 text-purple-700', sub: `Avg risk: ${avgRisk}%`, onClick: () => navigate('/prediction') },
     ],
     admin: [
-      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Registered' },
-      { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Active alerts' },
-      { label: 'Predictions This Month', value: predictionsThisMonth, icon: TrendingUp,    color: 'bg-purple-100 text-purple-700', sub: 'AI assessments' },
-      { label: 'Pending Predictions',    value: pendingLabReviews,    icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'No assessment yet' },
+      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'Registered', onClick: () => navigate('/patients') },
+      { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Active alerts', onClick: () => navigate('/patients?filter=high-risk') },
+      { label: 'Predictions This Month', value: predictionsThisMonth, icon: TrendingUp,    color: 'bg-purple-100 text-purple-700', sub: 'AI assessments', onClick: () => navigate('/patients') },
+      { label: 'Pending Predictions',    value: pendingLabReviews,    icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'No assessment yet', onClick: () => navigate('/patients?filter=pending') },
     ],
     records_officer: [
-      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'On record' },
-      { label: 'Visits Recorded',        value: visits.length,        icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'All time' },
-      { label: 'Pending Predictions',    value: pendingLabReviews,    icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'No assessment yet' },
-      { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Flagged' },
+      { label: 'Total Patients',         value: totalPatients,        icon: Users,         color: 'bg-brand-100 text-brand-700',   sub: 'On record', onClick: () => navigate('/patients') },
+      { label: 'Visits Recorded',        value: visits.length,        icon: Calendar,      color: 'bg-blue-100 text-blue-700',     sub: 'All time', onClick: () => navigate('/patients') },
+      { label: 'Pending Predictions',    value: pendingLabReviews,    icon: ClipboardList, color: 'bg-amber-100 text-amber-700',   sub: 'No assessment yet', onClick: () => navigate('/patients?filter=pending') },
+      { label: 'High Risk Patients',     value: highRiskCount,        icon: AlertTriangle, color: 'bg-red-100 text-red-700',       sub: 'Flagged', onClick: () => navigate('/patients?filter=high-risk') },
     ],
   };
 

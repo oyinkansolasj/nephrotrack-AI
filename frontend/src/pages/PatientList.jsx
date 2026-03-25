@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, UserPlus, Filter, ChevronRight, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
@@ -15,14 +15,18 @@ const formatDate = (iso) => {
 
 export default function PatientList() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentUser, getToken } = useAuth();
+
+  const filterParam = searchParams.get('filter'); // 'high-risk' or 'pending'
 
   const [patients,     setPatients]     = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState('');
   const [search,       setSearch]       = useState('');
-  const [riskFilter,   setRiskFilter]   = useState('all');
+  const [riskFilter,   setRiskFilter]   = useState(filterParam === 'high-risk' ? 'high' : 'all');
   const [genderFilter, setGenderFilter] = useState('all');
+  const [pendingOnly,  setPendingOnly]  = useState(filterParam === 'pending');
 
   const canRegister = ['admin', 'records_officer'].includes(currentUser?.role);
 
@@ -53,9 +57,10 @@ export default function PatientList() {
       p.last_name.toLowerCase().includes(q)  ||
       p.id.toLowerCase().includes(q)         ||
       (p.phone || '').includes(q);
-    const matchRisk   = riskFilter   === 'all' || p.ckd_risk   === riskFilter;
-    const matchGender = genderFilter === 'all' || p.gender     === genderFilter;
-    return matchSearch && matchRisk && matchGender;
+    const matchRisk    = riskFilter   === 'all' || p.ckd_risk   === riskFilter;
+    const matchGender  = genderFilter === 'all' || p.gender     === genderFilter;
+    const matchPending = !pendingOnly || !p.ckd_stage;
+    return matchSearch && matchRisk && matchGender && matchPending;
   });
 
   return (
@@ -99,6 +104,12 @@ export default function PatientList() {
               <option value="Female">Female</option>
             </select>
           </div>
+          <button
+            onClick={() => setPendingOnly(p => !p)}
+            className={`text-sm px-3 py-2 rounded-lg border font-medium transition-colors ${pendingOnly ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+          >
+            {pendingOnly ? 'Pending Only ✕' : 'Pending'}
+          </button>
           {canRegister && (
             <button onClick={() => navigate('/patients/register')} className="btn-primary flex items-center gap-2">
               <UserPlus className="w-4 h-4" /> Register Patient
