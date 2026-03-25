@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Stethoscope, CheckCircle, ArrowLeft, Brain, Loader2 } from 'lucide-react';
+import { Stethoscope, CheckCircle, ArrowLeft, Brain, Loader2, Search } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
@@ -27,6 +27,9 @@ export default function ClinicalVisit() {
   const [patientsLoading,  setPatientsLoading]  = useState(true);
   const [step,             setStep]             = useState(1);
   const [selectedPatient,  setSelectedPatient]  = useState('');
+  const [patientSearch,    setPatientSearch]    = useState('');
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
+  const dropdownRef = useRef(null);
   const [visitType,        setVisitType]        = useState('');
   const [visitDate,        setVisitDate]        = useState(new Date().toISOString().split('T')[0]);
   const [vitals,           setVitals]           = useState(initVitals);
@@ -47,6 +50,28 @@ export default function ClinicalVisit() {
       .catch(() => {})
       .finally(() => setPatientsLoading(false));
   }, [getToken]);
+
+  // ── Close patient dropdown on click outside ──────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowPatientDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredPatients = patients.filter(p => {
+    const q = patientSearch.toLowerCase();
+    return !q || p.first_name.toLowerCase().includes(q) || p.last_name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
+  });
+
+  const selectPatient = (p) => {
+    setSelectedPatient(p.id);
+    setPatientSearch(`${p.first_name} ${p.last_name}`);
+    setShowPatientDropdown(false);
+  };
 
   // ── Submit visit to API ────────────────────────────────────────────────────
   const handleSubmit = async () => {
@@ -142,12 +167,37 @@ export default function ClinicalVisit() {
                       <Loader2 className="w-4 h-4 animate-spin" /> Loading patients…
                     </div>
                   ) : (
-                    <select value={selectedPatient} onChange={e => setSelectedPatient(e.target.value)} className="input-field" required>
-                      <option value="">-- Choose patient --</option>
-                      {patients.map(p => (
-                        <option key={p.id} value={p.id}>{p.id} – {p.first_name} {p.last_name}</option>
-                      ))}
-                    </select>
+                    <div className="relative" ref={dropdownRef}>
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={patientSearch}
+                          onChange={e => { setPatientSearch(e.target.value); setShowPatientDropdown(true); if (!e.target.value) setSelectedPatient(''); }}
+                          onFocus={() => setShowPatientDropdown(true)}
+                          className="input-field pl-9"
+                          placeholder="Search by name or ID..."
+                        />
+                      </div>
+                      {showPatientDropdown && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {filteredPatients.length === 0 ? (
+                            <div className="px-3 py-2 text-sm text-slate-400">No patients found</div>
+                          ) : (
+                            filteredPatients.map(p => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => selectPatient(p)}
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-brand-50 transition-colors ${selectedPatient === p.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-700'}`}
+                              >
+                                {p.id} – {p.first_name} {p.last_name}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
                 <div>

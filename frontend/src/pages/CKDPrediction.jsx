@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Brain, AlertTriangle, CheckCircle, Loader, Loader2, RotateCcw, FileDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Brain, AlertTriangle, CheckCircle, Loader, Loader2, RotateCcw, FileDown, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import Header from '../components/layout/Header';
 import { predictionSections, predictionFeatures, featureLabels } from '../config/predictionConfig';
@@ -54,6 +54,25 @@ export default function CKDPrediction() {
   const [saving,          setSaving]          = useState(false);
   const [saved,           setSaved]           = useState(false);
   const [collapsed,       setCollapsed]       = useState({});
+  const [patientSearch,   setPatientSearch]   = useState('');
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // ── Close patient dropdown on click outside ──────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowPatientDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredPatients = patients.filter(p => {
+    const q = patientSearch.toLowerCase();
+    return !q || p.first_name.toLowerCase().includes(q) || p.last_name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
+  });
 
   // ── Load patient list for dropdown ─────────────────────────────────────────
   useEffect(() => {
@@ -64,7 +83,9 @@ export default function CKDPrediction() {
         setPatients(list);
         // Auto-select patient from URL param (e.g. /prediction?patient=abc-123)
         const urlPatientId = searchParams.get('patient');
-        if (urlPatientId && list.some(p => p.id === urlPatientId)) {
+        const urlPatient = list.find(p => p.id === urlPatientId);
+        if (urlPatient) {
+          setPatientSearch(`${urlPatient.first_name} ${urlPatient.last_name}`);
           fillPatientData(urlPatientId);
         }
       })
@@ -281,6 +302,7 @@ export default function CKDPrediction() {
   const resetForm = () => {
     setFormValues({});
     setSelectedPatient('');
+    setPatientSearch('');
     setResult(null);
     setSaved(false);
   };
@@ -447,12 +469,37 @@ export default function CKDPrediction() {
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading patients…
                 </div>
               ) : (
-                <select value={selectedPatient} onChange={handlePatientSelect} className="input-field w-full sm:w-64">
-                  <option value="">— Auto-fill from patient —</option>
-                  {patients.map(p => (
-                    <option key={p.id} value={p.id}>{p.id} – {p.first_name} {p.last_name}</option>
-                  ))}
-                </select>
+                <div className="relative w-full sm:w-64" ref={dropdownRef}>
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={patientSearch}
+                      onChange={e => { setPatientSearch(e.target.value); setShowPatientDropdown(true); if (!e.target.value) { setSelectedPatient(''); setFormValues({}); } }}
+                      onFocus={() => setShowPatientDropdown(true)}
+                      className="input-field pl-9"
+                      placeholder="Search patient..."
+                    />
+                  </div>
+                  {showPatientDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredPatients.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">No patients found</div>
+                      ) : (
+                        filteredPatients.map(p => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => { setPatientSearch(`${p.first_name} ${p.last_name}`); setShowPatientDropdown(false); fillPatientData(p.id); }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-brand-50 transition-colors ${selectedPatient === p.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-700'}`}
+                          >
+                            {p.id} – {p.first_name} {p.last_name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
