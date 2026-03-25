@@ -104,49 +104,6 @@ export default function PatientRegistration() {
     );
   }
 
-  const Field = ({ label, name, type = 'text', placeholder, required, children, className = '' }) => (
-    <div className={className}>
-      <label className="label">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      {children || (
-        <input type={type} value={form[name]} onChange={e => set(name, e.target.value)}
-          className="input-field" placeholder={placeholder} required={required} />
-      )}
-    </div>
-  );
-
-  const Select = ({ label, name, options, required }) => (
-    <div>
-      <label className="label">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <select value={form[name]} onChange={e => set(name, e.target.value)} className="input-field" required={required}>
-        <option value="">Select</option>
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-    </div>
-  );
-
-  const PhoneField = ({ label, codeName, phoneName, required, className = '' }) => (
-    <div className={className}>
-      <label className="label">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <div className="flex">
-        <select
-          value={form[codeName]}
-          onChange={e => set(codeName, e.target.value)}
-          className="input-field w-44 rounded-r-none border-r-0 flex-shrink-0"
-        >
-          {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
-        </select>
-        <input
-          type="tel"
-          value={form[phoneName]}
-          onChange={e => set(phoneName, e.target.value)}
-          className="input-field rounded-l-none flex-1"
-          placeholder="XXXX-XXXX-XXXX"
-          required={required}
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen">
       <Header title="Register New Patient" subtitle="Complete all required fields to add a patient to the system" />
@@ -162,14 +119,49 @@ export default function PatientRegistration() {
               <UserPlus className="w-4 h-4 text-brand-600" /> Personal Information
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Field label="First Name" name="firstName" placeholder="e.g. Chioma" required />
-              <Field label="Last Name"  name="lastName"  placeholder="e.g. Eze"    required />
-              <Field label="Date of Birth" name="dob" type="date" required />
-              <Select label="Gender" name="gender" options={['Male', 'Female', 'Other']} required />
-              <PhoneField label="Phone Number" codeName="phoneCode" phoneName="phone" required />
-              <Field label="Email Address" name="email" type="email" placeholder="patient@mail.com" />
-              <Field label="Home Address" name="address" placeholder="Street, City" className="sm:col-span-2" />
-              <Select label="Blood Group" name="bloodGroup" options={['A+','A-','B+','B-','O+','O-','AB+','AB-']} required />
+              <div>
+                <label className="label">First Name<span className="text-red-500 ml-0.5">*</span></label>
+                <input type="text" value={form.firstName} onChange={e => set('firstName', e.target.value)} className="input-field" placeholder="e.g. Chioma" required />
+              </div>
+              <div>
+                <label className="label">Last Name<span className="text-red-500 ml-0.5">*</span></label>
+                <input type="text" value={form.lastName} onChange={e => set('lastName', e.target.value)} className="input-field" placeholder="e.g. Eze" required />
+              </div>
+              <div>
+                <label className="label">Date of Birth<span className="text-red-500 ml-0.5">*</span></label>
+                <input type="date" value={form.dob} onChange={e => set('dob', e.target.value)} className="input-field" required />
+              </div>
+              <div>
+                <label className="label">Gender<span className="text-red-500 ml-0.5">*</span></label>
+                <select value={form.gender} onChange={e => set('gender', e.target.value)} className="input-field" required>
+                  <option value="">Select</option>
+                  {['Male', 'Female', 'Other'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Phone Number<span className="text-red-500 ml-0.5">*</span></label>
+                <div className="flex">
+                  <select value={form.phoneCode} onChange={e => set('phoneCode', e.target.value)} className="input-field w-44 rounded-r-none border-r-0 flex-shrink-0">
+                    {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                  </select>
+                  <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} className="input-field rounded-l-none flex-1" placeholder="XXXX-XXXX-XXXX" required />
+                </div>
+              </div>
+              <div>
+                <label className="label">Email Address</label>
+                <input type="email" value={form.email} onChange={e => set('email', e.target.value)} className="input-field" placeholder="patient@mail.com" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="label">Home Address</label>
+                <input type="text" value={form.address} onChange={e => set('address', e.target.value)} className="input-field" placeholder="Street, City" />
+              </div>
+              <div>
+                <label className="label">Blood Group<span className="text-red-500 ml-0.5">*</span></label>
+                <select value={form.bloodGroup} onChange={e => set('bloodGroup', e.target.value)} className="input-field" required>
+                  <option value="">Select</option>
+                  {['A+','A-','B+','B-','O+','O-','AB+','AB-'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -177,10 +169,27 @@ export default function PatientRegistration() {
           <div className="card p-6">
             <h3 className="text-base font-semibold text-slate-800 mb-4">Next of Kin</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Name" name="nextOfKinName" placeholder="Full name" required />
-              <PhoneField label="Phone Number" codeName="nextOfKinPhoneCode" phoneName="nextOfKinPhone" required />
-              <Field label="Address" name="nextOfKinAddress" placeholder="Street, City" />
-              <Field label="Email Address" name="nextOfKinEmail" type="email" placeholder="email@mail.com" />
+              <div>
+                <label className="label">Name<span className="text-red-500 ml-0.5">*</span></label>
+                <input type="text" value={form.nextOfKinName} onChange={e => set('nextOfKinName', e.target.value)} className="input-field" placeholder="Full name" required />
+              </div>
+              <div>
+                <label className="label">Phone Number<span className="text-red-500 ml-0.5">*</span></label>
+                <div className="flex">
+                  <select value={form.nextOfKinPhoneCode} onChange={e => set('nextOfKinPhoneCode', e.target.value)} className="input-field w-44 rounded-r-none border-r-0 flex-shrink-0">
+                    {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                  </select>
+                  <input type="tel" value={form.nextOfKinPhone} onChange={e => set('nextOfKinPhone', e.target.value)} className="input-field rounded-l-none flex-1" placeholder="XXXX-XXXX-XXXX" required />
+                </div>
+              </div>
+              <div>
+                <label className="label">Address</label>
+                <input type="text" value={form.nextOfKinAddress} onChange={e => set('nextOfKinAddress', e.target.value)} className="input-field" placeholder="Street, City" />
+              </div>
+              <div>
+                <label className="label">Email Address</label>
+                <input type="email" value={form.nextOfKinEmail} onChange={e => set('nextOfKinEmail', e.target.value)} className="input-field" placeholder="email@mail.com" />
+              </div>
               <div>
                 <label className="label">Relationship to Patient</label>
                 <select value={form.nextOfKinRelationship} onChange={e => set('nextOfKinRelationship', e.target.value)} className="input-field">
@@ -195,8 +204,20 @@ export default function PatientRegistration() {
           <div className="card p-6">
             <h3 className="text-base font-semibold text-slate-800 mb-4">Medical History</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select label="Hypertension" name="hypertension" options={['Yes','No','Unknown']} required />
-              <Select label="Diabetes Mellitus" name="diabetes" options={['Yes','No','Unknown']} required />
+              <div>
+                <label className="label">Hypertension<span className="text-red-500 ml-0.5">*</span></label>
+                <select value={form.hypertension} onChange={e => set('hypertension', e.target.value)} className="input-field" required>
+                  <option value="">Select</option>
+                  {['Yes','No','Unknown'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Diabetes Mellitus<span className="text-red-500 ml-0.5">*</span></label>
+                <select value={form.diabetes} onChange={e => set('diabetes', e.target.value)} className="input-field" required>
+                  <option value="">Select</option>
+                  {['Yes','No','Unknown'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
               <div>
                 <label className="label">Allergies</label>
                 <textarea value={form.allergies} onChange={e => set('allergies', e.target.value)}

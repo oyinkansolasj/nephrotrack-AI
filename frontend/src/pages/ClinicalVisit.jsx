@@ -10,6 +10,15 @@ const API = API_BASE;
 const initVitals = { bp_systolic: '', bp_diastolic: '', pulse: '', temperature: '', weight: '', height: '' };
 const initLabs   = { creatinine: '', bun: '', glucose: '', potassium: '', hemoglobin: '', albumin: '', hba1c: '', gfr: '' };
 
+const InputField = ({ label, name, state, setState, unit, placeholder }) => (
+  <div>
+    <label className="label">{label} {unit && <span className="text-slate-400">({unit})</span>}</label>
+    <input type="number" step="any" value={state[name]}
+      onChange={e => setState(s => ({ ...s, [name]: e.target.value }))}
+      className="input-field" placeholder={placeholder} />
+  </div>
+);
+
 export default function ClinicalVisit() {
   const navigate = useNavigate();
   const { currentUser, getToken } = useAuth();
@@ -94,15 +103,6 @@ export default function ClinicalVisit() {
           </div>
         </div>
       </div>
-    </div>
-  );
-
-  const InputField = ({ label, name, state, setState, unit, placeholder }) => (
-    <div>
-      <label className="label">{label} {unit && <span className="text-slate-400">({unit})</span>}</label>
-      <input type="number" step="any" value={state[name]}
-        onChange={e => setState(s => ({ ...s, [name]: e.target.value }))}
-        className="input-field" placeholder={placeholder} />
     </div>
   );
 
