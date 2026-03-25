@@ -191,11 +191,17 @@ export default function CKDPrediction() {
         }
       }
 
+      // Fetch with timeout (90s for cold start on free tier)
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 90000);
+
       const mlRes = await fetch(`${ML_API}/predict`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mlPayload),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (!mlRes.ok) throw new Error('ML service error');
 
@@ -513,7 +519,7 @@ export default function CKDPrediction() {
                 <div className="text-center py-12">
                   <Loader className="w-12 h-12 text-brand-500 animate-spin mx-auto mb-4" />
                   <p className="text-sm text-slate-500">Analysing clinical data...</p>
-                  <p className="text-xs text-slate-400 mt-1">Running ML pipeline</p>
+                  <p className="text-xs text-slate-400 mt-1">Running ML pipeline — this may take up to a minute on first use</p>
                 </div>
               )}
 
@@ -529,7 +535,10 @@ export default function CKDPrediction() {
                 <div className="text-center py-12">
                   <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-3" />
                   <p className="text-sm font-semibold text-red-600">ML Service Unavailable</p>
-                  <p className="text-xs text-slate-400 mt-1">The prediction service may be waking up — please try again in a moment</p>
+                  <p className="text-xs text-slate-400 mt-1">The prediction service may be waking up from inactivity.</p>
+                  <button onClick={runPrediction} className="mt-3 btn-primary text-xs px-4 py-1.5">
+                    Try Again
+                  </button>
                 </div>
               )}
 
