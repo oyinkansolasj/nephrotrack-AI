@@ -1,21 +1,50 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE } from '../config/api';
 
 const AuthContext = createContext(null);
 
-const TOKEN_KEY = 'nephrotrack_token';
-const USER_KEY  = 'nephrotrack_user';
+const TOKEN_KEY   = 'nephrotrack_token';
+const USER_KEY    = 'nephrotrack_user';
+const LOGIN_TIME  = 'nephrotrack_login_time';
+const SESSION_MAX = 8 * 60 * 60 * 1000; // 8 hours in ms
+
+function isSessionValid() {
+  const loginTime = localStorage.getItem(LOGIN_TIME);
+  if (!loginTime) return false;
+  return Date.now() - parseInt(loginTime, 10) < SESSION_MAX;
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(LOGIN_TIME);
+}
 
 export function AuthProvider({ children }) {
-  // Restore session from localStorage on page refresh
+  // Restore session from localStorage — only if not expired
   const [currentUser, setCurrentUser] = useState(() => {
     try {
+      if (!isSessionValid()) {
+        clearSession();
+        return null;
+      }
       const stored = localStorage.getItem(USER_KEY);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
     }
   });
+
+  // Check session expiry periodically (every minute)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentUser && !isSessionValid()) {
+        clearSession();
+        setCurrentUser(null);
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   // ── login ──────────────────────────────────────────────────────────────────
   const login = async (email, password) => {
@@ -32,9 +61,10 @@ export function AuthProvider({ children }) {
         return { success: false, message: data.message || 'Login failed' };
       }
 
-      // Persist token + user in localStorage
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY,  JSON.stringify(data.user));
+      // Persist token + user + login time in localStorage
+      localStorage.setItem(TOKEN_KEY,  data.token);
+      localStorage.setItem(USER_KEY,   JSON.stringify(data.user));
+      localStorage.setItem(LOGIN_TIME, String(Date.now()));
       setCurrentUser(data.user);
 
       return { success: true };
@@ -56,8 +86,7 @@ export function AuthProvider({ children }) {
       }
     } catch { /* ignore network errors on logout */ }
 
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearSession();
     setCurrentUser(null);
   };
 
