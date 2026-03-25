@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 const TOKEN_KEY   = 'nephrotrack_token';
 const USER_KEY    = 'nephrotrack_user';
 const LOGIN_TIME  = 'nephrotrack_login_time';
-const SESSION_MAX = 8 * 60 * 60 * 1000; // 8 hours in ms
+const SESSION_MAX = 2 * 60 * 60 * 1000; // 2 hours in ms
 
 function isSessionValid() {
   const loginTime = localStorage.getItem(LOGIN_TIME);
