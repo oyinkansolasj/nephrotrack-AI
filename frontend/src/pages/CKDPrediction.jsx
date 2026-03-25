@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Brain, AlertTriangle, CheckCircle, Loader, Loader2, RotateCcw, FileDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import Header from '../components/layout/Header';
@@ -42,6 +43,7 @@ for (const [field, mapping] of Object.entries(SELECT_MAP)) {
 
 export default function CKDPrediction() {
   const { getToken, currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [patients,        setPatients]        = useState([]);
   const [patientsLoading, setPatientsLoading] = useState(true);
@@ -57,14 +59,21 @@ export default function CKDPrediction() {
   useEffect(() => {
     fetch(`${API}/patients`, { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(r => r.json())
-      .then(data => setPatients(Array.isArray(data) ? data : []))
+      .then(data => {
+        const list = Array.isArray(data) ? data : [];
+        setPatients(list);
+        // Auto-select patient from URL param (e.g. /prediction?patient=abc-123)
+        const urlPatientId = searchParams.get('patient');
+        if (urlPatientId && list.some(p => p.id === urlPatientId)) {
+          fillPatientData(urlPatientId);
+        }
+      })
       .catch(() => {})
       .finally(() => setPatientsLoading(false));
   }, [getToken]);
 
-  // ── Auto-fill form when a patient is selected ───────────────────────────────
-  const handlePatientSelect = async (e) => {
-    const id = e.target.value;
+  // ── Fetch and fill patient data by ID ──────────────────────────────────────
+  const fillPatientData = async (id) => {
     setSelectedPatient(id);
     setResult(null);
     setSaved(false);
@@ -159,6 +168,8 @@ export default function CKDPrediction() {
       setFormValues({});
     }
   };
+
+  const handlePatientSelect = (e) => fillPatientData(e.target.value);
 
   const handleChange = (name, value) => {
     setFormValues(f => ({ ...f, [name]: value }));

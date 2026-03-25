@@ -95,7 +95,7 @@ export default function ClinicalVisit() {
           </p>
           <div className="flex gap-3 justify-center">
             {runPrediction && (
-              <button onClick={() => navigate('/prediction')} className="btn-primary flex items-center gap-2">
+              <button onClick={() => navigate(`/prediction?patient=${selectedPatient}`)} className="btn-primary flex items-center gap-2">
                 <Brain className="w-4 h-4" /> Run Prediction
               </button>
             )}
