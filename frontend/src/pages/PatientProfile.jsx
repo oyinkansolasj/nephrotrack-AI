@@ -194,7 +194,7 @@ export default function PatientProfile() {
             </div>
 
             {canRunPrediction && (
-              <button onClick={() => navigate('/prediction')} className="btn-primary w-full flex items-center justify-center gap-2">
+              <button onClick={() => navigate(`/prediction?patient=${id}`)} className="btn-primary w-full flex items-center justify-center gap-2">
                 <Brain className="w-4 h-4" /> Run CKD Prediction
               </button>
             )}
@@ -225,7 +225,7 @@ export default function PatientProfile() {
                   <Clock className="w-4 h-4 text-brand-600" /> Visit Timeline
                 </h4>
                 {canRunPrediction && (
-                  <button onClick={() => navigate('/visits/new')} className="btn-secondary text-xs flex items-center gap-1.5">
+                  <button onClick={() => navigate(`/visits/new?patient=${id}`)} className="btn-secondary text-xs flex items-center gap-1.5">
                     <Stethoscope className="w-3.5 h-3.5" /> New Visit
                   </button>
                 )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Stethoscope, CheckCircle, ArrowLeft, Brain, Loader2, Search } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +21,7 @@ const InputField = ({ label, name, state, setState, unit, placeholder }) => (
 
 export default function ClinicalVisit() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentUser, getToken } = useAuth();
 
   const [patients,         setPatients]         = useState([]);
@@ -46,7 +47,16 @@ export default function ClinicalVisit() {
   useEffect(() => {
     fetch(`${API}/patients`, { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(r => r.json())
-      .then(data => { setPatients(Array.isArray(data) ? data : []); })
+      .then(data => {
+        const list = Array.isArray(data) ? data : [];
+        setPatients(list);
+        const urlPatientId = searchParams.get('patient');
+        const urlPatient = list.find(p => p.id === urlPatientId);
+        if (urlPatient) {
+          setSelectedPatient(urlPatientId);
+          setPatientSearch(`${urlPatient.first_name} ${urlPatient.last_name}`);
+        }
+      })
       .catch(() => {})
       .finally(() => setPatientsLoading(false));
   }, [getToken]);
